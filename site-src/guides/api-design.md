@@ -1,148 +1,86 @@
-# API Design Guide
+<!-- TRANSLATED by md-translate -->
+# 应用程序接口设计指南
 
-There are some general design guidelines used throughout this API.
+本应用程序接口通篇被引用了一些通用设计准则。
 
-!!! note
-    Throughout the Gateway API documentation and specification,
-    keywords such as "MUST", "MAY", and "SHOULD" are used
-    broadly. These should be interpreted as described in RFC 2119.
+注意 在整个 gateway API 文档和规范中，"MUST"、"MAY "和 "SHOULD "等关键字被广泛引用。 这些关键字应按照 RFC 2119 中的描述来解释。
 
-## Single resource consistency
+## 单一资源一致性
 
-The Kubernetes API guarantees consistency only on a single resource level. There
-are a couple of consequences for complex resource graphs as opposed to single
-resources:
+Kubernetes API 仅在单个资源级别上保证一致性。 相对于单个资源，复杂的资源图会产生一些后果：
 
-*   Error checking of properties spanning multiple resource will be asynchronous
-    and eventually consistent. Simple syntax checks will be possible at the
-    single resource level, but cross resource dependencies will need to be
-    handled by the controller.
-*   Controllers will need to handle broken links between resources and/or
-    mismatched configuration.
+* 对跨越多个资源的属性进行错误检查将是异步的，并最终保持一致。简单的语法检查可以在单个资源级别进行，但跨资源的依赖关系需要由控制器处理。
+* 控制器需要处理资源之间的断开链接和/或不匹配的配置。
 
-## Conflicts
+## 冲突
 
-Separation and delegation of responsibility among independent actors (e.g
-between cluster ops and application developers) can result in conflicts in the
-configuration. For example, two application teams may inadvertently submit
-configuration for the same HTTP path.
+独立行动者（如集群运行人员和应用程序开发人员之间）之间的责任分离和授权可能会导致配置冲突。 例如，两个应用程序团队可能会无意中为相同的 HTTP 路径提交配置。
 
-In most cases, guidance for conflict resolution is provided along with the
-documentation for fields that may have a conflict. If a conflict does not have a
-prescribed resolution, the following guiding principles should be applied:
+在大多数情况下，在为可能存在冲突的字段提供文件的同时，也提供了解决冲突的指 导。 如果冲突没有规定的解决方案，则应适用以下指导原则：
 
-* Prefer not to break things that are working.
-* Drop as little traffic as possible.
-* Provide a consistent experience when conflicts occur.
-* Make it clear which path has been chosen when a conflict has been identified.
-  Where possible, this should be communicated by setting appropriate status
-  conditions on relevant resources.
-* More specific matches should be given precedence over less specific ones.
-* The resource with the oldest creation timestamp wins.
-* If everything else is equivalent (including creation timestamp), precedences
-  should be given to the resource appearing first in alphabetical order
-  (namespace/name). For example, foo/bar would be given precedence over foo/baz.
+* 最好不要破坏正在运行的设备。
+* 尽可能减少流量。
+* 发生冲突时，提供一致的体验。
+* 在发现冲突时，明确选择哪条路径。在可能的情况下，应通过在相关资源上设置适当的状态条件来传达这一点。
+* 更具体的匹配应优先于不太具体的匹配。
+* 创建时间戳最早的资源胜出。
+* 如果其他条件相同（包括创建时间戳），则应优先考虑按字母顺序（namespace/name）排在前面的资源。例如，foo/bar 优先于 foo/baz。
 
-## Gracefully Handling Future API Versions
+## 优雅地处理未来的应用程序接口版本
 
-An important consideration when implementing this API is how it might change in
-the future. Similar to the Ingress API before it, this API is designed to be
-implemented by a variety of different products within the same cluster. That
-means that the API version your implementation was developed with may be
-different than the API version it is used with.
+在实施此 API 时，一个重要的考虑因素是它将来可能会如何变化。 与之前的 ingress API 类似，此 API 的设计目的是由同一集群中的各种不同产品来实施。 这意味着您的实施方案所开发的 API 版本可能与它被引用的 API 版本不同。
 
-At a minimum, the following requirements must be met to ensure future versions
-of the API do not break your implementation:
+至少必须满足以下要求，以确保未来版本的 API 不会破坏您的实现：
 
-* Handle fields with loosened validation without crashing
-* Handle fields that have transitioned from required to optional without
-  crashing
+* 处理验证松动的字段而不会崩溃
+* 处理从必填项过渡到可选项的字段而不会崩溃
 
-### Supported API Versions
+### 支持的应用程序接口版本
 
-The version of Gateway API CRDs that is installed in a cluster can be determined
-by looking at the `gateway.networking.k8s.io/bundle-version` annotation on each
-CRD. Each implementation MUST compare that with the list of versions that it
-recognizes and supports. Implementations with a GatewayClass MUST publish the
-`SupportedVersion` condition on the GatewayClass to indicate whether the CRDs
-installed in the cluster are supported.
+可通过查看每个 CRD 上的 `gateway.networking.k8s.io/bundle-version` 注解来确定集群中安装的 Gateway API CRD 的版本。 每个实现必须将其与它所识别和支持的版本列表进行比较。 具有 GatewayClass 的实现必须在 GatewayClass 上发布 `SupportedVersion` 条件，以表明集群中安装的 CRD 是否受支持。
 
-## Limitations of CRD and Webhook Validation
+## CRD 和 Webhook 验证的局限性
 
-??? note "Webhook Validation is Deprecated"
+备注 "webhook 验证已过时"？
 
-    Webhook validation in Gateway API has been deprecated and will be fully
-    removed in v1.1.0. With that said, all of this guidance will still apply for
-    implementations as long as they support v1.0.0 or older releases of the API.
+```
+Webhook validation in Gateway API has been deprecated and will be fully
+removed in v1.1.0. With that said, all of this guidance will still apply for
+implementations as long as they support v1.0.0 or older releases of the API.
+```
 
-CRD and webhook validation is not the final validation i.e. webhook is "nice UX"
-but not schema enforcement. This validation is intended to provide immediate
-feedback to users when they provide an invalid configuration. Write code
-defensively with the assumption that at least some invalid input (Gateway API
-resources) will reach your controller. Both Webhook and CRD validation is not
-fully reliable because it:
+CRD 和 webhook 验证不是最终的验证，即 webhook 是 "不错的用户体验"，但不是模式执行。 这种验证的目的是在用户提供无效配置时立即向用户提供反馈。 编写代码时要有防御性，假设至少有一些无效输入（gateway API 资源）会到达你的控制器。 Webhook 和 CRD 验证都不是完全可靠的，因为它：
 
-* May not be deployed correctly.
-* May be loosened in future API releases. (Fields may contain values with less
-  restrictive validation in newer versions of the API).
+* 可能无法正确部署。
+* 可能会在未来的 API 发布中被放宽。(在较新版本的 API 中，字段可能包含限制性验证较松的值）。
 
-*Note: These limitations are not unique to Gateway API and apply more broadly to
-any Kubernetes CRDs and webhooks.*
+注意：这些限制并非 gateway API 所独有，它们更广泛地适用于任何 Kubernetes CRD 和 webhook。
 
-Implementers should ensure that, even if unexpected values are encountered in
-the API, their implementations are still as secure as possible and handle this
-input gracefully. The most common response would be to reject the configuration
-as malformed and signal the user via a condition in the status block. To avoid
-duplicating work, Gateway API maintainers are considering adding a shared
-validation package that implementations can use for this purpose. This is
-tracked by [#926](https://github.com/kubernetes-sigs/gateway-api/issues/926).
+实现者应确保，即使在 API 中遇到意外值，他们的实现仍应尽可能安全，并从容应对这种输入。 最常见的应对方法是将配置视为畸形而拒绝，并通过状态块中的条件向用户发出信号。 为避免重复工作，gateway API 维护者正在考虑添加一个共享验证包，供实现者用于此目的。这已被 [#926](https://github.com/kubernetes-sigs/gateway-api/issues/926) 所引用。
 
-### Expectations
+### 期望
 
-We expect there will be varying levels of conformance among the
-different providers in the early days of this API. Users can use the
-results of the conformance tests to understand areas where there may
-be differences in behavior from the spec.
+我们预计，在此 API 的早期阶段，不同 Provider 之间的一致性会有不同程度的差异。 用户可以通过一致性测试的结果来了解哪些方面的行为可能与规范存在差异。
 
-### Implementation-specific
+### 具体实施
 
-In some aspects of the API, we give the user an ability to specify usage of the
-feature, however, the exact behavior may depend on the underlying
-implementation. For example, regular expression matching is present in all
-implementations but specifying an exact behavior is impossible due to
-subtle differences between the underlying libraries used (e.g. PCRE, ECMA,
-Re2). It is still useful for our users to spec out the feature as much as
-possible, but we acknowledge that the behavior for some subset of the API may
-still vary (and that's ok).
+在 API 的某些方面，我们允许用户指定功能的用法，但具体行为可能取决于相应的实现。 例如，正则表达式匹配存在于所有实现中，但由于所使用的相应库（如 PCRE、ECMA、Re2）之间存在细微差别，因此不可能指定具体的行为。 对于我们的用户来说，尽可能指定功能的用法仍然很有用，但我们承认 API 某些子集的行为可能仍然存在差异（这也没关系）。
 
-These cases will be specified as defining delimited parts of the API
-"implementation-specific".
+这些情况将作为应用程序接口中 "特定于实现 "的部分进行定义。
 
+## 种类与资源
 
-## Kind vs. Resource
+与其他 Kubernetes API 类似，gateway API 在整个 API 的对象引用中使用了 "Kind"（种类）而不是 "Resource"（资源）。 大多数 Kubernetes 用户应该都熟悉这种模式。
 
-Similar to other Kubernetes APIs, Gateway API uses "Kind" instead of "Resource"
-in object references throughout the API. This pattern should be familiar to
-most Kubernetes users.
+根据[Kubernetes API 公约](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md)，这意味着该 API 的所有实现都应该在种类和资源之间有一个预定义的映射。依赖动态资源映射是不安全的。
 
-Per the [Kubernetes API conventions][1], this means that all implementations of
-this API should have a predefined mapping between kinds and resources. Relying
-on dynamic resource mapping is not safe.
+## 应用程序接口约定
 
-## API Conventions
+gateway API 遵循 Kubernetes API [约定](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md)。这些约定旨在简化客户端开发，并确保配置机制可以在各种不同的用例中一致实施。 除了 Kubernetes API 约定之外，Gateway API 还有以下约定：
 
-Gateway API follows Kubernetes API [conventions][1]. These conventions
-are intended to ease client development and ensure that configuration
-mechanisms can consistently be implemented across a diverse set of use
-cases. In addition to the Kubernetes API conventions, Gateway API has the
-following conventions:
+### 列表名称
 
-### List Names
+本项目使用的另一个惯例是 CRD 中列表的复数字段名称。 我们使用以下规则：
 
-Another convention this project uses is for plural field names for lists
-in our CRDs. We use the following rules:
-
-- If the field name is a noun, use a plural value.
-- If the field name is a verb, use a singular value.
-
-[1]: https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md
+* 如果字段名称是名词，请引用复数值。
+* 如果字段名称是动词，则被引用为单数。

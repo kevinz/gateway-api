@@ -1,39 +1,27 @@
-# HTTP traffic splitting
+<!-- TRANSLATED by md-translate -->
+# HTTP 流量分割
 
-The [HTTPRoute resource](/api-types/httproute) allows you to specify 
-weights to shift traffic between different backends. This is useful for 
-splitting traffic during rollouts, canarying changes, or for emergencies. 
-The HTTPRoute`spec.rules.backendRefs` accepts a list of backends that a route 
-rule will send traffic to. The relative weights of these backends define 
-the split of traffic between them. The following YAML snippet shows how two 
-Services are listed as backends for a single route rule. This route rule 
-will split traffic 90% to `foo-v1` and 10% to `foo-v2`.
+HTTPRoute 资源](/api-types/httproute) 允许您指定权重，以便在不同的后端之间转移流量。 这对于在推出、临时变更或紧急情况下分割流量非常有用。 HTTPRoute`spec.rules.backendRefs` 接受路由规则将向其发送流量的后端列表。 这些后端的相对权重定义了它们之间的流量分割。 下面的 YAML 代码段显示了如何将两个服务列为一条路由规则的后端。 该路由规则将把 90% 的流量分割给 `foo-v1`，10% 的流量分割给 `foo-v2`。
 
-![Traffic splitting](/images/simple-split.png)
+交通分割](/镜像/simple-split.png)
 
 ```yaml
 {% include 'standard/traffic-splitting/simple-split.yaml' %}
 ```
 
-`weight` indicates a proportional split of traffic (rather than percentage)
-and so the sum of all the weights within a single route rule is the
-denominator for all of the backends. `weight` is an optional parameter and if
-not specified, defaults to 1. If only a single backend is specified for a
-route rule it implicitly receives 100% of the traffic, no matter what (if any)
-weight is specified.
+权重 "表示按比例分配流量（而不是百分比），因此单条路由规则中所有权重的总和就是所有后端的分母。"权重 "是一个可选参数，如果未指定，默认为 1。 如果路由规则只指定了一个后端，那么无论指定了什么权重（如果有的话），它都会隐式地接收 100% 的流量。
 
 ## Guide
 
-This guide shows the deployment of two versions of a Service. Traffic splitting
-is used to manage the gradual splitting of traffic from v1 to v2.
+本指南展示了一个服务的两个版本的部署情况。 流量拆分被引用来管理从 v1 到 v2 的流量逐步拆分。
 
-This example assumes that the following Gateway is deployed:
+本例假设部署了以下 gateway：
 
 ```yaml 
 {% include 'standard/simple-gateway/gateway.yaml' %}
 ```
 
-## Canary traffic rollout
+##金丝雀交通推出
 
 At first, there may only be a single version of a Service that serves
 production user traffic for `foo.example.com`. The following HTTPRoute has no
@@ -45,43 +33,30 @@ traffic before splitting any production user traffic to `foo-v2`.
 ensures that all traffic with the matching host and header 
 (the most specific match) will be sent to `foo-v2`.
 
-![Traffic splitting](/images/traffic-splitting-1.png)
-
+交通分流](/images/traffic-splitting-1.png)
 
 ```yaml
 {% include 'standard/traffic-splitting/traffic-split-1.yaml' %}
 ```
 
-## Blue-green traffic rollout
+## 蓝绿交通推广
 
-After internal testing has validated successful responses from `foo-v2`,
-it's desirable to shift a small percentage of the traffic to the new Service
-for gradual and more realistic testing. The HTTPRoute below adds `foo-v2`
-as a backend along with weights. The weights add up to a total of 100 so
-`foo-v1` receives 90/100=90% of the traffic and `foo-v2` receives
-10/100=10% of the traffic.
+在内部测试验证了 `foo-v2` 的成功响应后，最好将一小部分流量转移到新服务，以便逐步进行更真实的测试。 下面的 HTTPRoute 添加了 `foo-v2` 作为后端，并加上了权重。 权重加起来总共是 100，因此 `foo-v1` 接收 90/100=90% 的流量，而 `foo-v2` 接收 10/100=10% 的流量。
 
-![Traffic splitting](/images/traffic-splitting-2.png)
-
+交通分流](/images/traffic-splitting-2.png)
 
 ```yaml
 {% include 'standard/traffic-splitting/traffic-split-2.yaml' %}
 ```
 
-## Completing the rollout
+## 完成推广
 
-Finally, if all signals are positive, it is time to fully shift traffic to
-`foo-v2` and complete the rollout. The weight for `foo-v1` is set to
-`0` so that it is configured to accept zero traffic. 
+最后，如果所有信号都是正的，就可以将流量完全转移到 `foo-v2` 并完成推出。 将 `foo-v1` 的权重设置为 `0`，以便将其配置为接受零流量。
 
-![Traffic splitting](/images/traffic-splitting-3.png)
-
+交通分流](/images/traffic-splitting-3.png)
 
 ```yaml
 {% include 'standard/traffic-splitting/traffic-split-3.yaml' %}
 ```
 
-At this point 100% of the traffic is being routed to `foo-v2` and the
-rollout is complete. If for any reason `foo-v2` experiences errors, the
-weights can be updated to quickly shift traffic back to `foo-v1`. Once
-the rollout is deemed final, v1 can be fully decommissioned.
+此时，100% 的流量都会被路由到 `foo-v2`，推广工作已经完成。 如果 `foo-v2`由于任何原因出现错误，可以更新权重，将流量迅速转回 `foo-v1`。 一旦推广工作被视为最终结果，v1 就可以完全退出运行。

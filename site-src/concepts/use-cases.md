@@ -1,202 +1,128 @@
-# Use Cases
+<!-- TRANSLATED by md-translate -->
+# 被引用的案例
 
-Gateway API covers a _very_ wide range of use cases (which is both a
-strength and a weakness!). This page is emphatically _not_ meant to be an
-exhaustive list of these use cases: rather, it is meant to provide some
-examples that can be helpful to demonstrate how the API can be used.
+Gateway API 涵盖了_非常_广泛的使用案例（这既是优点也是缺点！）。 本页强调_并不是要详尽无遗地列出这些使用案例：相反，它旨在提供一些示例，以帮助演示如何使用 API。
 
-In all cases, it's very important to bear in mind the [roles and personas]
-used in Gateway API. The use cases presented here are deliberately
-described in terms of [Ana], [Chihiro], and [Ian]: they are the ones for whom
-the API must be usable. (It's also important to remember that even though
-these roles might be filled by the same person, especially in smaller
-organizations, they all have distinct concerns that we need to consider
-separately.)
+在任何情况下，牢记 gateway API 中使用的[角色和人物]（/concepts/roles-and-personas）都是非常重要的。 这里介绍的用例特意以[Ana]（/concepts/roles-and-personas#ana）、[Chihiro]（/concepts/roles-and-personas#chihiro）和[Ian]（/concepts/roles-and-personas#ian）来描述：API 必须对他们可用（同样重要的是要记住，即使这些角色可能由同一个人担任，特别是在较小的组织中，他们都有不同的关注点，我们需要分别考虑）。
 
-[roles and personas]:/concepts/roles-and-personas
-[Ana]:/concepts/roles-and-personas#ana
-[Chihiro]:/concepts/roles-and-personas#chihiro
-[Ian]:/concepts/roles-and-personas#ian
+## 被引用的案例
 
-## The Use Cases
+* [基本南北用例](#basic-northsouth-use-case)
+* 单个
+网关后的多个应用程序](#multiple-applications-behind-a-single-gateway)
+* [基本东西向用例]（#basic-eastwest-use-case） -- **实验性**
+* [网关和网格用例](#gateway-and-mesh-use-case) -- **实验性**
 
-- [Basic north/south use case](#basic-northsouth-use-case)
-- [Multiple applications behind a single
-  Gateway](#multiple-applications-behind-a-single-gateway)
-- [Basic east/west use case](#basic-eastwest-use-case) -- **experimental**
-- [Gateway and mesh use case](#gateway-and-mesh-use-case) -- **experimental**
+## Basic [north/south](/concepts/glossary#northsouth-traffic) use case
 
-[role and personas]:/concepts/roles-and-personas
+成功 "v0.8.0+ 版本中的标准通道"。
 
-## Basic [north/south] use case
+```
+The [north/south] use case is fully supported by the Standard Channel
+in `v0.8.0+`.
+```
 
-??? success "Standard Channel in v0.8.0+"
+Ana 创建了一个微服务应用程序，她希望在 Kubernetes 中运行该应用程序。 她的应用程序将被集群外的客户引用，虽然 Ana 已经创建了应用程序，但设置集群并不是她的专长。
 
-    The [north/south] use case is fully supported by the Standard Channel
-    in `v0.8.0+`.
+1. 安娜去找千寻，让他们成立一个集群。安娜告诉千寻
+她的客户希望她的应用程序接口可以使用根植于
+https://ana.application.com/。
+2.Chihiro 去找 Ian，请求建立一个集群。
+3.Ian 提供了一个运行网关控制器的集群，该控制器具有 [GatewayClass](/api-types/gatewayclass)
+资源，名为 "basic-gateway-class"。网关控制器管理与路由来自外部流量的
+基础设施。
+集群内部流量的相关基础设施。
+4.Ian 给 Chihiro 提供了新集群的凭据，并告诉 Chihiro
+他们可以使用 gatewayClass `basic-gateway-class` 进行设置。
+5.Chihiro 将名为 `ana-gateway` 的 [Gateway](/api-types/gateway) 应用到集群，告诉它
+为 TLS 流量侦听 443 端口，并向其提供 TLS 证书
+主题 CN 为 `ana.application.com`。它们将该网关与 `basic-gateway-class` GatewayClass 关联。
+6.伊恩在第 3 步中配置的网关控制器为 "ana.application.com "分配了一个负载平衡器和一个 IP 地址。
+网关控制器分配一个负载平衡器和一个 IP 地址，并提供数据平面
+组件，这些组件可以路由到达负载平衡器端口
+443 的数据平面组件，并开始监视与`ana-gateway`相关联的路由资源。
+ana-gateway "相关的路由资源。
+7.Chihiro 获取 "ana-gateway "的 IP 地址，并在集群外为 "ana.application "创建 DNS 记录。
+与集群外的 `ana.application.com` 匹配。
+8.千寻告诉安娜，她可以使用名为 gateway
+`ana-gateway` 的网关。
+9.安娜编写并应用 [HTTPRoute](/api-types/httproute) 资源，以配置允许哪些 URL 路径和哪些微服务。
+以及哪些微服务应处理它们。她将这些
+这些 HTTPRoutes 被引用到 gateway `ana-gateway` 的网关 API [路由
+Attachment Process]（/concepts/api-overview#attaching-routes-to-gateway）将这些 HTTPRoutes 与 gateway 关联起来。
+10.此时，当请求到达负载平衡器时，它们会被路由
+到 Ana 的应用程序。
 
-Ana has created a microservice application which she wants to run in
-Kubernetes. Her application will be used by clients outside the cluster, and
-while Ana has created the application, setting up the cluster is not in her
-wheelhouse.
+这使得 Chihiro 可以在 gateway 执行集中式策略[如 TLS](/guides/tls#downstream-tls)，同时允许 Ana 和她的同事控制应用程序的[路由逻辑](/guides/http-routing)和推出计划（如[流量分割推出](/guides/traffic-splitting)）。
 
-1. Ana goes to Chihiro to ask them to set up a cluster. Ana tells Chihiro that
-   her clients will expect her APIs to be available using URLs rooted at
-   `https://ana.application.com/`.
+## 单个 gateway 后面有多个应用程序
 
-2. Chihiro goes to Ian and requests a cluster.
+成功 "v0.8.0+ 版本中的标准通道"。
 
-3. Ian provisions a cluster running a gateway controller with a [GatewayClass]
-   resource named `basic-gateway-class`. The gateway controller manages the
-   infrastructure associated with routing traffic from outside the cluster to
-   inside the cluster.
+```
+The [north/south] use case is fully supported by the Standard Channel
+in `v0.8.0+`.
+```
 
-4. Ian gives Chihiro credentials to the new cluster, and tells Chihiro that
-   they can use GatewayClass `basic-gateway-class` to set things up.
+这与【基本南北用例】(#basic-northsouth-use-case) 非常相似，但有多个应用程序团队：Ana 和她的团队在 `store` 名称空间中管理一个店面应用程序，而 Allison 和她的团队在 `site` 名称空间中管理一个网站。
 
-5. Chihiro applies a [Gateway] named `ana-gateway` to the cluster, telling it
-   to listen on port 443 for TLS traffic, and providing it a TLS certificate
-   with a Subject CN of `ana.application.com`. They associate this Gateway with the `basic-gateway-class` GatewayClass.
+* Ian 和 Chihiro 合作提供集群、`GatewayClass`和
+gateway"。
+* Ana 和 Allison 独立部署工作负载和 HTTPRoutes，并将其绑定到同一`Gateway`资源。
+gateway` 资源的工作负载和 HTTPRoutes。
 
-6. The gateway controller that Ian provisioned in step 3 allocates a load
-   balancer and an IP address for `ana-gateway`, provisions data-plane
-   components that can route requests arriving at the load balancer on port
-   443, and starts watching for routing resources associated with
-   `ana-gateway`.
+同样，这种关注点的分离允许 Chihiro 在 gateway 上执行集中策略[如 TLS](/guides/tls#downstream-tls)。 与此同时，Ana 和 Allison 在各自的 namespace 中运行自己的应用程序](/guides/multiple-ns)，但将他们的 Routes 附加到同一个共享 gateway 上，这样他们就可以独立控制自己的[路由逻辑](/guides/http-routing)、[流量分割展开](/guides/traffic-splitting)等，而不用担心 Chihiro 和 Ian 正在处理的事情。
 
-7. Chihiro gets the IP address of `ana-gateway` and creates a DNS record
-   outside the cluster for `ana.application.com` to match.
+![gateway API 角色](/images/gateway-roles.png)
 
-8. Chihiro tells Ana that she's good to go, using the Gateway named
-   `ana-gateway`.
+## Basic [east/west](/concepts/glossary#eastwest-traffic) use case
 
-9. Ana writes and applies [HTTPRoute] resources to configure which URL paths
-   are allowed and which microservices should handle them. She associates
-   these HTTPRoutes with Gateway `ana-gateway` using the Gateway API [Route
-   Attachment Process].
+危险 "v0.8.0 中的实验"。
 
-10. At this point, when requests arrive at the load balancer, they are routed
-    to Ana's application according to her routing specification.
+```
+The [GAMMA initiative][gamma] work for supporting service mesh use cases
+is _experimental_ in `v0.8.0`. It is possible that it will change; we do
+not recommend it in production at this point.
+```
 
-This allows Chihiro to enforce centralized policies [such as
-TLS](/guides/tls#downstream-tls) at the Gateway, while simultaneously allowing
-Ana and her colleagues control over the application's [routing
-logic](/guides/http-routing) and rollout plans (e.g. [traffic splitting
-rollouts](/guides/traffic-splitting)).
+在这种情况下，Ana 建立了一个工作负载，该负载已经在一个带有符合 [GAMMA](/concepts/gamma/) 标准的 [service mesh](/concepts/glossary#service-mesh) 的集群中运行。 她希望使用 mesh 来保护她的工作负载，具体做法是拒绝对她的工作负载调用不正确的 URL 路径，并在任何人对她的工作负载提出请求时强制执行超时。
 
-[north/south]:/concepts/glossary#northsouth-traffic
+* 千寻和伊恩已经提供了一个具有运行服务网格的集群。
+安娜不需要向他们提出任何请求。
+* Ana 编写了一个 HTTPRoute，该 HTTPRoute 定义了可接受的路由和超时，其
+父路 由 "是她的工作负载的服务。
+* Ana 在与其工作负载相同的 namespace 中应用 HTTPRoute。
+* 网格会自动开始执行由
+描述的路由策略。
 
-## Multiple applications behind a single Gateway
+在这种情况下，角色间的关注点分离使 Ana 能够利用服务网格，通过自定义路由逻辑，在向 Chihiro 或 Ian 发出请求时不会出现任何瓶颈。
 
-??? success "Standard Channel in v0.8.0+"
+## ＃＃网关和网格被引用的情况
 
-    The [north/south] use case is fully supported by the Standard Channel
-    in `v0.8.0+`.
+危险 "v0.8.0 中的实验"。
 
-This is remarkably similar to the [basic north/south use
-case](#basic-northsouth-use-case), but there are multiple application teams:
-Ana and her team are managing a storefront application in the `store`
-Namespace, while Allison and her team are managing a website in the `site`
-Namespace.
+```
+The [GAMMA initiative][gamma] work for supporting service mesh use cases
+is _experimental_ in `v0.8.0`. It is possible that it will change; we do
+not recommend it in production at this point.
+```
 
-- Ian and Chihiro work together to provide a cluster, `GatewayClass`, and
-  `Gateway`, as above.
+这实际上是 [单个 gateway 后面的多个应用程序](#multiple-applications-behind-a-single-gateway) 和 [basic east/west](#basic-eastwest-use-case) 用例的组合：
 
-- Ana and Allison independently deploy workloads and HTTPRoutes bound to the
-  same `Gateway` resource.
+* Chihiro 和 Ian 将配置一个集群、一个 [GatewayClass](/api-types/gatewayclass) 和一个 [Gateway](/api-types/gateway)。
+* Ana 和 Allison 将在相应的
+namespace 中部署应用程序。
+* 然后，Ana 和 Allison 将酌情应用 HTTPRoute 资源。
 
-Again, this separation of concerns allows Chihiro to enforce centralized
-policies [such as TLS](/guides/tls#downstream-tls) can be enforced at the
-Gateway. Meanwhile, Ana and Allison run their applications [in their own
-Namespaces](/guides/multiple-ns), but attach their Routes to the same shared
-Gateway, allowing them to independently control their [routing
-logic](/guides/http-routing), [traffic splitting
-rollout](/guides/traffic-splitting), etc., while not worrying about the things
-that Chihiro and Ian are handling.
+不过，由于涉及到网格，这种情况下有两个非常重要的变化：
 
-[HTTPRoute]:/api-types/httproute
-[GatewayClass]:/api-types/gatewayclass
-[Gateway]:/api-types/gateway
-[Route Attachment Process]:/concepts/api-overview#attaching-routes-to-gateways
+1. 如果 Chihiro 部署的 [gateway controller]（/concepts/glossary#gateway-controller）默认为 [Service
+路由](/concepts/glossary#service-routing)，他们可能需要重新配置为[端点路由](/concepts/glossary#endpoint-routing)。
+(这是[GAMMA](/concepts/gamma/)正在进行的一项工作，但预计
+端点路由将被推荐）。
+2.Ana 和/或 Allison 需要将 HTTPRoutes 与各自的
+工作负载的服务绑定 HTTPRoutes，以配置网状路由逻辑。这些可以是
+不同的 HTTPRoutes，或者他们可以应用单一的
+HTTPRoutes 同时绑定到 gateway 和服务。
 
-![Gateway API Roles](/images/gateway-roles.png)
-
-## Basic [east/west] use case
-
-!!! danger "Experimental in v0.8.0"
-
-    The [GAMMA initiative][gamma] work for supporting service mesh use cases
-    is _experimental_ in `v0.8.0`. It is possible that it will change; we do
-    not recommend it in production at this point.
-
-In this scenario, Ana has built a workload which is already running in a
-cluster with a [GAMMA]-compliant [service mesh]. She wants to use the mesh to
-protect her workload by rejecting calls to her workload with incorrect
-URL paths, and by enforcing timeouts whenever anyone makes a request of her
-workload.
-
-- Chihiro and Ian have already provided a cluster with a running service mesh.
-  Ana doesn't need to make any requests of them.
-
-- Ana writes an HTTPRoute that defines acceptable routes and timeouts and has
-  a `parentRef` of her workload's Service.
-
-- Ana applies her HTTPRoute in the same Namespace as her workload.
-
-- The mesh automatically starts enforcing the routing policy described by
-  Ana's HTTPRoute.
-
-In this case, the separation of concerns across roles allows Ana to take
-advantage of the service mesh, with custom routing logic, without any
-bottlenecks in requests to Chihiro or Ian.
-
-[east/west]:/concepts/glossary#eastwest-traffic
-[GAMMA]:/concepts/gamma/
-[service mesh]:/concepts/glossary#service-mesh
-
-## Gateway and mesh use case
-
-!!! danger "Experimental in v0.8.0"
-
-    The [GAMMA initiative][gamma] work for supporting service mesh use cases
-    is _experimental_ in `v0.8.0`. It is possible that it will change; we do
-    not recommend it in production at this point.
-
-This is effectively a combination of the [multiple applications behind a
-single Gateway](#multiple-applications-behind-a-single-gateway) and [basic
-east/west](#basic-eastwest-use-case) use cases:
-
-- Chihiro and Ian will provision a cluster, a [GatewayClass], and a [Gateway].
-
-- Ana and Allison will deploy their applications in the appropriate
-  Namespaces.
-
-- Ana and Allison will then apply HTTPRoute resources as appropriate.
-
-There are two very important changes in this scenario, though, since a mesh is
-involved:
-
-1. If Chihiro has deployed a [gateway controller] that defaults to [Service
-   routing], they will probably need to reconfigure it for [endpoint routing].
-   (This is an ongoing area of work for [GAMMA], but the expectation is that
-   endpoint routing will be recommended.)
-
-2. Ana and/or Allison will need to bind HTTPRoutes to their respective
-   workloads' Services to configure mesh routing logic. These could be
-   distinct HTTPRoutes solely for the mesh, or they could apply single
-   HTTPRoutes that bind to both the Gateway and a Service.
-
-As always, the ultimate point of separating concerns in this way is that it
-permits Chihiro to enforce centralized policies [such as
-TLS](/guides/tls#downstream-tls) at the Gateway, while allowing Ana and
-Allison to retain independent control of [routing
-logic](/guides/http-routing), [traffic splitting
-rollout](/guides/traffic-splitting), etc., both for [north/south] and for
-[east/west] routing.
-
-
-
-
-[gateway controller]:/concepts/glossary#gateway-controller
-[Service routing]:/concepts/glossary#service-routing
-[endpoint routing]:/concepts/glossary#endpoint-routing
+一如既往，以这种方式分离关注点的最终目的是允许 Chihiro 在 gateway 执行集中式策略[如 TLS](/guides/tls#downstream-tls) ，同时允许 Ana 和 Allison 保留对[路由逻辑](/guides/http-routing)、[流量分割展开](/guides/traffic-splitting)等的独立控制，既可用于[北/南](/concepts/glossary#northsouth-traffic)，也可用于[东/西](/concepts/glossary#eastwest-traffic)路由。

@@ -1,69 +1,46 @@
-# Gateway API Glossary
+<!-- TRANSLATED by md-translate -->
+# gateway API 词汇表
 
-### Consumer Route
+### 消费者路线
 
-A Route bound to a workload's Service by a consumer of a given workload,
-refining the specific consumer's use of the workload.
+由特定工作负载的消费者绑定到工作负载服务的路由，细化了特定消费者对工作负载的使用。
 
-### Gateway Controller
+### gateway 控制器
 
-A _gateway controller_ is software that manages the infrastructure associated
-with routing traffic across contexts using Gateway API, analogous to the
-earlier _ingress controller_ concept. Gateway controllers often, but not
-always, run in the cluster where they're managing infrastructure.
+gateway 控制器是一种软件，用于管理与使用 gateway API 跨上下文路由流量相关的基础架构，类似于早期的入口控制器（ingress controller）概念。 gateway 控制器通常（但不总是）运行在集群中，在集群中管理基础架构。
 
-### East/West traffic
+### 东西交通
 
-Traffic from workload to workload within a cluster.
+集群内工作负载之间的流量。
 
-### Endpoint routing
+#### 端点路由
 
-_Endpoint routing_ is sending requests to a specific Service directly to one
-of the endpoints of the Service backend, bypassing routing decisions which
-might be made by the underlying network infrastructure. This is commonly
-necessary for advanced routing cases like sticky sessions, where the gateway
-will need to guarantee that every request for a specific session goes to the
-same endpoint.
+_端点路由_是指将对特定服务的请求直接发送到服务后端中的一个端点，绕过相应的网络基础设施可能做出的路由决定。 这通常是粘性会话等高级路由情况所必需的，在这种情况下，网关需要保证特定会话的每个请求都会发送到相应的端点。
 
-### North/South traffic
+### 南北交通
 
-Traffic from outside a cluster to inside a cluster (and vice versa).
+从集群外到集群内的流量（反之亦然）。
 
-### Producer Route
+### 制作人路线
 
-A Route bound to a workload's Service by the creator of a given workload,
-defining what is acceptable use of the workload. Producer routes must always
-be in the same Namespace as their workload's Service.
+由特定工作负载创建者绑定到工作负载服务的路由，定义了工作负载可接受的使用方式。 生产者路由必须始终与其工作负载服务位于同一 namespace。
 
-### Service backend
+### 服务后端
 
-The part of a Kubernetes Service resource that is a set of endpoints
-associated with Pods and their IPs. Some east/west traffic happens by having
-workloads direct requests to specific endpoints within a Service backend.
+Kubernetes 服务资源的一部分，是与 Pod 及其 IP 相关联的一组端点。 通过让工作负载将请求直接发送到服务后端的特定端点，会发生一些东西向流量。
 
-### Service frontend
+### 服务前端
 
-The part of a Kubernetes Service resource that allocates a DNS record and a
-cluster IP. East/west traffic often - but not always - works by having
-workloads direct requests to a Service frontend.
+Kubernetes 服务资源中分配 DNS 记录和集群 IP 的部分。 东西向流量通常（但不总是）通过让工作负载将请求直接发送到服务前端来实现。
 
-### Service mesh
+### 服务网格
 
-A _service mesh_ is software that manages infrastructure providing security,
-reliability, and observability for communications between workloads (east/west
-traffic). Service meshes generally work by intercepting communications between
-workloads at a very low level, often (though not always) by inserting proxies
-next to the workload's Pods.
+服务网格是一种软件，用于管理为工作负载之间的通信（东/西向流量）提供安全性、可靠性和可观测性的基础设施。 服务网格通常通过在工作负载的 Pod 旁插入代理（虽然不一定），在很低的级别拦截工作负载之间的通信。
 
-### Service routing
+### 服务路线
 
-_Service routing_ is sending requests to a specific Service to the service
-frontend, allowing the underlying network infrastructure (usually `kube-proxy`
-or a [service mesh](#service-mesh)) to choose the specific endpoint to which
-the request is routed.
+_服务路由_是指将对特定服务的请求发送到服务前端，让相应的网络基础设施（通常是 `kube-proxy` 或 [service mesh](#service-mesh)）选择将请求路由到的特定端点。
 
-### Workload
+#### 工作量
 
-An instance of computation that provides a function within a cluster,
-comprising the Pods providing the compute, and the
-Deployment/Job/ReplicaSet/etc which owns those Pods.
+在集群中提供功能的计算实例，由提供计算的 Pod 和拥有这些 Pod 的部署/任务/副本集等组成。

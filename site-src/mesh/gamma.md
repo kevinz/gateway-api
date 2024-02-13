@@ -1,54 +1,18 @@
-# The GAMMA Initiative (Gateway API for Service Mesh)
+<!-- TRANSLATED by md-translate -->
+# GAMMA 计划（服务网格 gateway API）
 
-Gateway API was originally designed to manage traffic from clients outside the
-cluster to services inside the cluster -- the _ingress_ or
-[_north/south_][north/south traffic] case. Over time, though, interest from
-[service mesh] users prompted the creation of the GAMMA (**G**ateway **A**PI for
-**M**esh **M**anagement and **A**dministration) initiative in 2022 to define how
-Gateway API could also be used for inter-service or [_east/west_
-traffic][east/west traffic] within the same cluster.
+gateway API最初设计用于管理从集群外的客户端到集群内服务的流量--即[_ingress_]或[_north/south_](/concepts/glossary#northsouth-traffic)情况。 随着时间的推移，[service mesh](/concepts/glossary#service-mesh)用户的兴趣促使GAMMA（**G**ateway **A**PI for **M**esh **M**anagement and **A**dministration）计划于2022年创建，以定义如何将gateway API也引用到同一集群内的服务间或[_east/west_ traffic](/concepts/glossary#eastwest-traffic)。
 
-The GAMMA initiative is a dedicated workstream within the Gateway API
-subproject, rather than being a separate subproject. GAMMA’s goal is to define
-how Gateway API can be used to configure a service mesh, with the intention of
-making minimal changes to Gateway API and always preserving the [role-oriented]
-nature of Gateway API. Additionally, we strive to advocate for consistency
-between implementations of Gateway API by service mesh projects, regardless of
-their technology stack or proxy.
+GAMMA 计划是 gateway API 子项目中的一个专门工作流，而不是一个独立的子项目。 GAMMA 的目标是定义如何使用 gateway API 配置服务网格，目的是尽量减少对 gateway API 的改动，并始终保持 Gateway API [面向角色]（/概念/角色和人物）的性质。 此外，我们还努力倡导服务网格项目在实现 gateway API 时保持一致，无论其技术栈或代理如何。
 
-## Deliverables
+## 交付成果
 
-The work of the GAMMA intiative will be captured in [Gateway Enhancement
-Proposals][geps] that extend or refine the Gateway API specification to cover
-mesh and mesh-adjacent use cases. To date, these have been relatively small
-changes (albeit sometimes with relatively large impacts!) and we expect that to
-continue. Governance of the Gateway API specification remains solely with the
-maintainers of the Gateway API subproject.
+GAMMA 倡议的工作将在[网关增强提案](/geps/overview)中体现，这些提案将扩展或完善网关 API 规范，以涵盖网格和网格相邻用例。 迄今为止，这些变化相对较小（尽管有时会产生相对较大的影响！），我们希望这种情况继续下去。 网关 API 规范的治理仍完全由网关 API 子项目的维护者负责。
 
-The ideal final outcome of the GAMMA initiative is that service mesh use cases
-become a first-party concern of Gateway API, at which point there will be no
-further need for a separate initiative.
+GAMMA 计划的理想最终结果是，服务网格用例成为 gateway API 的第一方关注点，届时将不再需要单独的计划。
 
-## Contributing
+## 捐款
 
-We welcome contributors of all levels! There are [many ways to
-contribute][contributor-ladder] to Gateway API and GAMMA, both technical and
-non-technical.
+我们欢迎所有级别的贡献者！为 gateway API 和 GAMMA 做出贡献有 [多种方式](/contributing/contributor-ladder)，包括技术性和非技术性贡献。
 
-The simplest way to get started is to attend one of GAMMA's regular meetings,
-which happen every two weeks on Tuesdays for 1 hour (as found on the
-[sig-network calendar]), alternating between 3pm PT and 8am PT slots to try to
-be as time-zone inclusive as possible. GAMMA meetings will be moderated by the
-[GAMMA leads] with notes taken by a volunteer. Community members should feel
-free to attend both GAMMA and Gateway API meetings, but are by no means
-obligated to do so.
-
-[contributor-ladder]:/contributing/contributor-ladder
-[east/west traffic]:/concepts/glossary#eastwest-traffic
-[GAMMA
-    leads]:https://github.com/kubernetes-sigs/gateway-api/blob/main/OWNERS_ALIASES#L23
-[geps]:/geps/overview
-[north/south traffic]:/concepts/glossary#northsouth-traffic
-[service mesh]:/concepts/glossary#service-mesh
-[sig-network calendar]:/contributing/community/#meetings
-[role-oriented]:/concepts/roles-and-personas
+最简单的入门方法是参加 GAMMA 的例会，例会每两周举行一次，时间为周二，每次 1 小时（可在 [sig-network 日历](/contributing/community/#meetings)上找到），在太平洋时间下午 3 点和上午 8 点之间交替举行，以尽可能兼顾时区。 GAMMA 会议将由 [GAMMA 领导](https://github.com/kubernetes-sigs/gateway-api/blob/main/OWNERS_ALIASES#L23) 主持，并由一名志愿者记录。 社区成员可自由参加 GAMMA 和 gateway API 会议，但绝非必须参加。

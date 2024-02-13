@@ -1,60 +1,44 @@
-# TLS Configuration
+<!-- TRANSLATED by md-translate -->
+# TLS 配置
 
-Gateway API allows for a variety of ways to configure TLS. This document lays
-out various TLS settings and gives general guidelines on how to use them
-effectively.
+gateway API 允许以多种方式配置 TLS。 本文档列出了各种 TLS 设置，并给出了如何有效使用这些设置的一般指南。
 
-!!! info "Experimental Channel"
+信息 "实验频道"
 
-    The `TLSRoute` and `BackendTLSPolicy` resources described below are currently only included in the
-    "Experimental" channel of Gateway API. For more information on release
-    channels, refer to the [related documentation](/concepts/versioning).
+```
+The `TLSRoute` and `BackendTLSPolicy` resources described below are currently only included in the
+"Experimental" channel of Gateway API. For more information on release
+channels, refer to the [related documentation](/concepts/versioning).
+```
 
-## Client/Server and TLS
+## 客户端/服务器和 TLS
 
-![overview](/images/tls-overview.svg)
+![概览](/镜像/tls-overview.svg)
 
-For Gateways, there are two connections involved:
+对于 gateway 来说，涉及两个连接：
 
-- **downstream**: This is the connection between the client and the Gateway.
-- **upstream**: This is the connection between the Gateway and backend resources
-   specified by routes. These backend resources will usually be Services.
+* **下游**：这是客户端与 gateway 之间的连接。
+* **上游**：这是 gateway 与路由指定的后端资源之间的连接。这些后端资源通常是服务。
 
-With Gateway API, TLS configuration of downstream and
-upstream connections is managed independently.
+通过 gateway API，下游和上游连接的 TLS 配置可独立管理。
 
-For downstream connections, depending on the Listener Protocol, different TLS modes and Route types are supported.
+对于下游连接，根据监听器协议的不同，支持不同的 TLS 模式和路由类型。
 
-| Listener Protocol | TLS Mode    | Route Type Supported |
-|-------------------|-------------|---------------------|
-| TLS               | Passthrough | TLSRoute            |
-| TLS               | Terminate   | TCPRoute            |
-| HTTPS             | Terminate   | HTTPRoute           |
-| GRPC              | Terminate   | GRPCRoute           |
+| Listener Protocol | TLS Mode | Route Type Supported | |-------------------|-------------|---------------------| | TLS | Passthrough | TLSRoute | TLS | Terminate | TCPRoute | HTTPS | Terminate | HTTPRoute | GRPC | Terminate | GRPCRoute | TCPRoute | TCPRoute | TCPRoute | TCPRoute | TCPRoute | TCPRoute | GRPC
 
-Please note that in case of `Passthrough` TLS mode, no TLS settings take
-effect as the TLS session from the client is NOT terminated at the Gateway, but rather
-passes through the Gateway, encrypted.
+请注意，在 "直通 "TLS 模式下，由于客户端的 TLS 会话不会在 gateway 终止，而是加密后通过 gateway，因此 TLS 设置不会生效。
 
-For upstream connections, `BackendTLSPolicy` is used, and neither listener protocol nor TLS mode apply to the
-upstream TLS configuration. For `HTTPRoute`, the use of both `Terminate` TLS mode and `BackendTLSPolicy` is supported.
-Using these together provides what is commonly known as a connection that is terminated and then re-encrypted at
-the Gateway.
+对于上游连接，使用 "BackendTLSPolicy"，监听协议和 TLS 模式都不适用于上游 TLS 配置。 对于 "HTTPRoute"，支持同时使用 "Terminate "TLS 模式和 "BackendTLSPolicy"。 将这两种模式结合起来使用，就能实现通常所说的连接终止，然后在 gateway 重新加密。
 
-## Downstream TLS
+## 下游 TLS
 
-Downstream TLS settings are configured using listeners at the Gateway level.
+下游 TLS 设置被引用到 gateway 层级的侦听器中。
 
-### Listeners and TLS
+### 监听器和 TLS
 
-Listeners expose the TLS setting on a per domain or subdomain basis.
-TLS settings of a listener are applied to all domains that satisfy the
-`hostname` criteria.
+监听器以每个域或子域为单位公开 TLS 设置。 监听器的 TLS 设置适用于满足 "hostname "条件的所有域。
 
-In the following example, the Gateway serves the TLS certificate
-defined in the `default-cert` Secret resource for all requests.
-Although the example refers to HTTPS protocol, one can also use the same
-feature for TLS-only protocol along with TLSRoutes.
+在下面的示例中，gateway 会为所有请求提供在 "default-cert "秘密资源中定义的 TLS 证书。 虽然示例引用的是 HTTPS 协议，但同样的功能也可以与 TLSRoutes 一起用于纯 TLS 协议。
 
 ```yaml
 listeners:
@@ -68,92 +52,71 @@ listeners:
       name: default-cert
 ```
 
-### Examples
+### 示例
 
-#### Listeners with different certificates
+#### 使用不同证书的监听器
 
-In this example, the Gateway is configured to serve the `foo.example.com` and
-`bar.example.com` domains. The certificate for these domains is specified
-in the Gateway.
+在本例中，gateway 被配置为为 `foo.example.com` 和 `bar.example.com` 域提供服务。 这些域的证书已在 gateway 中指定。
 
 ```yaml
 {% include 'standard/tls-basic.yaml' %}
 ```
 
-#### Wildcard TLS listeners
+#### 通配符 TLS 监听器
 
-In this example, the Gateway is configured with a wildcard certificate for
-`*.example.com` and a different certificate for `foo.example.com`.
-Since a specific match takes priority, the Gateway will serve
-`foo-example-com-cert` for requests to `foo.example.com` and
-`wildcard-example-com-cert` for all other requests.
+在本例中，gateway 配置了`*.example.com`的通配符证书和`foo.example.com`的不同证书。由于特定匹配具有优先权，因此 gateway 将为对`foo.example.com`的请求提供`foo-example-com-cert`，而为所有其他请求提供`wildcard-example-com-cert`。
 
 ```yaml
 {% include 'standard/wildcard-tls-gateway.yaml' %}
 ```
 
-#### Cross namespace certificate references
+#### 跨 namespace 证书引用
 
-In this example, the Gateway is configured to reference a certificate in a
-different namespace. This is allowed by the ReferenceGrant created in the
-target namespace. Without that ReferenceGrant, the cross-namespace reference
-would be invalid.
+在本例中，gateway 被配置为引用不同名称空间中的证书。 目标名称空间中创建的 ReferenceGrant 允许这样做。 如果没有该 ReferenceGrant，跨名称空间引用将无效。
 
 ```yaml
 {% include 'standard/tls-cert-cross-namespace.yaml' %}
 ```
 
-## Upstream TLS
+## 上游 TLS
 
-Upstream TLS settings are configured using the experimental `BackendTLSPolicy`
-attached to a `Service` via a target reference.
+上游 TLS 设置是使用通过目标引用附加到 "服务 "的实验性 "BackendTLSPolicy "来配置的。
 
-This resource can be used to describe the SNI the Gateway should use to connect to the
-backend and how the certificate served by the backend Pod(s) should be verified.
+该资源可用于描述 gateway 连接后端应使用的 SNI，以及如何验证后端 Pod 提供的证书。
 
-### TargetRefs and TLS
+### TargetRefs 和 TLS
 
-BackendTLSPolicy contains specification for the `TargetRef` and `TLS`.  TargetRef is required and
-identifies the `Service` for which your HTTPRoute requires TLS. The `TLS` configuration contains a
-required `Hostname`, and either `CACertRefs` or `WellKnownCACerts`.
+BackendTLSPolicy 包含 "TargetRef "和 "TLS "的规范。 TargetRef 是必填项，用于标识 HTTPRoute 需要 TLS 的 "服务"。 TLS "配置包含必填的 "主机名 "以及 "CACertRefs "或 "WellKnownCACerts"。
 
-Hostname refers to the SNI the Gateway should use to connect to the backend, and
-must match the certificate served by the backend pod.
+主机名指的是 gateway 连接后端应使用的 SNI，必须与后端 pod 提供的证书相匹配。
 
-CACertRefs refer to one or more PEM-encoded TLS certificates. If there are no specific certificates
-to use, then you must set WellKnownCACerts to "System" to tell the Gateway to use a set of trusted
-CA Certificates. There may be some variation in which system certificates are used by each implementation.
-Refer to documentation from your implementation of choice for more information.
+CACertRefs 指的是一个或多个 PEM 编码的 TLS 证书。 如果没有要使用的特定证书，则必须将 WellKnownCACerts 设为 "System"（系统），以告诉 gateway 使用一组受信任的 CA 证书。 每个实现所使用的系统证书可能会有一些差异。 更多信息请参阅所选实现的文档。
 
-!!! info "Restrictions"
+信息 "限制"
 
-    - Cross-namespace certificate references are not allowed.
-    - Wildcard hostnames are not allowed.
+```
+- Cross-namespace certificate references are not allowed.
+- Wildcard hostnames are not allowed.
+```
 
-### Examples
+### 示例
 
-#### Using System Certificates
+#### 使用系统证书
 
-In this example, the `BackendTLSPolicy` is configured to use system certificates to connect with a
-TLS-encrypted upstream connection where Pods backing the `dev` Service are expected to serve a valid
-certificate for `dev.example.com`.
+在本例中，"BackendTLSPolicy "被配置为使用系统证书与 TLS 加密的上游连接进行连接，其中支持 "dev "服务的 Pod 预计将为 "dev.example.com "提供有效证书。
 
 ```yaml
 {% include 'experimental/v1alpha2/backendtlspolicy-system-certs.yaml' %}
 ```
 
-#### Using Explicit CA Certificates
+#### 使用显式 CA 证书
 
-In this example, the `BackendTLSPolicy` is configured to use certificates defined in the configuration
-map `auth-cert` to connect with a TLS-encrypted upstream connection where Pods backing the `auth` Service
-are expected to serve a valid certificate for `auth.example.com`.
+在此示例中，"BackendTLSPolicy "被配置为使用配置映射 "auth-cert "中定义的证书来连接 TLS 加密的上游连接，其中支持 "auth "服务的 Pod 预计将提供 "auth.example.com "的有效证书。
 
 ```yaml
 {% include 'experimental/v1alpha2/backendtlspolicy-ca-certs.yaml' %}
 ```
 
-## Extensions
+## 扩展
 
-Gateway TLS configurations provides an `options` map to add additional TLS
-settings for implementation-specific features. Some examples of features that
-could go in here would be TLS version restrictions, or ciphers to use.
+gateway TLS 配置提供了一个 "options "映射，用于为特定实施功能添加额外的 TLS 设置。 这里可引用的一些功能包括 TLS 版本限制或使用的密码。

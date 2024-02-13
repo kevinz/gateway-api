@@ -1,15 +1,17 @@
-# Backend Protocol
+<!-- TRANSLATED by md-translate -->
+# 后端协议
 
-??? example "Experimental Channel in v1.0.0+"
+例如 "V1.0.0+ 版本中的实验频道"。
 
-    This concept is part of the Experimental Channel in `v1.0.0+`.
+```
+This concept is part of the Experimental Channel in `v1.0.0+`.
+```
 
-Not all implementations of Gateway API support automatic protocol selection. In some cases protocols are disabled without an explicit opt-in. 
+并非所有 gateway API 实现都支持自动协议选择。 在某些情况下，协议会在没有明确选择的情况下被禁用。
 
-When a Route's backend references a Kubernetes Service, application developers can specify the protocol using `ServicePort` [`appProtocol`][appProtocol] field.
+当路由的后端引用 Kubernetes 服务时，应用程序开发人员可以使用 `ServicePort` [`appProtocol`](https://kubernetes.io/docs/concepts/services-networking/service/#application-protocol) 字段指定协议。
 
-For example the following `store` Kubernetes Service is indicating the port `8080` supports HTTP/2 Prior Knowledge.
-
+例如，下面的 `store` Kubernetes 服务显示端口 `8080` 支持 HTTP/2 先验知识。
 
 ```yaml
 apiVersion: v1
@@ -26,9 +28,7 @@ spec:
     targetPort: 8080
 ```
 
-Currently, Gateway API has conformance testing for:
+目前，gateway API 已对以下方面进行了一致性测试：
 
-- `kubernetes.io/h2c` - HTTP/2 Prior Knowledge
-- `kubernetes.io/ws` - WebSocket over HTTP
-
-[appProtocol]: https://kubernetes.io/docs/concepts/services-networking/service/#application-protocol
+* `kubernetes.io/h2c` - HTTP/2 预先知识
+* `kubernetes.io/ws` - 通过 HTTP 的 WebSocket

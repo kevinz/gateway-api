@@ -1,104 +1,54 @@
-# Conformance
+<!-- TRANSLATED by md-translate -->
+# 一致性
 
-This API covers a broad set of features and use cases and has been implemented
-widely. This combination of both a large feature set and variety of
-implementations requires clear conformance definitions and tests to ensure the
-API provides a consistent experience wherever it is used.
+该应用程序接口涵盖了广泛的功能和用例，并得到了广泛的实施。 这种既有大量功能集又有多种实施方式的组合需要明确的一致性定义和测试，以确保无论在哪里使用该应用程序接口，都能提供一致的体验。
 
-When considering Gateway API conformance, there are three important concepts:
+在考虑 gateway API 一致性时，有三个重要概念：
 
-## 1. Release Channels
+## 1. 发布通道
 
-Within Gateway API, release channels are used to indicate the stability of a
-field or resource. The "standard" channel of the API includes fields and
-resources that have graduated to "beta". The "experimental" channel of the API
-includes everything in the "standard" channel, along with experimental fields
-and resources that may still be changed in breaking ways **or removed
-altogether**. For more information on this concept, refer to our
-[versioning](/concepts/versioning) documentation.
+在 gateway API 中，发布通道用于表示字段或资源的稳定性。 API 的 "标准 "通道包括已升级到 "测试版 "的字段和资源。 API 的 "实验 "通道包括 "标准 "通道中的所有内容，以及仍可能以破坏性方式**或完全删除**的实验字段和资源。 有关此概念的更多信息，请引用我们的 [versioning](/concepts/versioning) 文档。
 
-## 2. Support Levels
+## 2.
 
-Unfortunately some implementations of the API will not be able to support every
-feature that has been defined. To address that, the API defines a corresponding
-support level for each feature:
+遗憾的是，有些应用程序接口的实现无法支持所定义的所有功能，为此，应用程序接口为每个功能定义了相应的支持级别：
 
-* **Core** features will be portable and we expect that there is a reasonable
-  roadmap for ALL implementations towards support of APIs in this category.
-* **Extended** features are those that are portable but not universally
-  supported across implementations. Those implementations that support the
-  feature will have the same behavior and semantics. It is expected that some
-  number of roadmap features will eventually migrate into the Core. Extended
-  features will be part of the API types and schema.
-* **Implementation-specific** features are those that are not portable and are
-  vendor-specific. Implementation-specific features will not have API types and
-  schema except via generic extension points.
+* **核心***功能将是可移植的，我们希望所有实现都有一个合理的路线图，以支持这类应用程序接口。
+* **扩展自**功能是指那些可移植但在不同实现中不被普遍支持的功能。支持该功能的实现将具有相同的行为和语义。预计一些路线图功能最终会迁移到核心功能中。扩展功能将成为 API 类型和模式的一部分。
+* **特定于实施的***功能是指那些不可移植且特定于供应商的功能。除非通过通用扩展点，否则特定于实现的功能将不具有 API 类型和模式。
 
-Behavior and feature in the Core and Extended set will be defined and validated
-via behavior-driven conformance tests. Implementation-specific features will not
-be covered by conformance tests.
+核心集和扩展集中的行为和功能将通过行为驱动的一致性测试来定义和验证。 一致性测试将不涵盖特定于实现的功能。
 
-By including and standardizing Extended features in the API spec, we expect to
-be able to converge on portable subsets of the API among implementations without
-compromising overall API support. Lack of universal support will not be a
-blocker towards developing portable feature sets. Standardizing on spec will
-make it easier to eventually graduate to Core when support is widespread.
+通过在 API 规范中加入扩展功能并使之标准化，我们希望能够在不影响整体 API 支持的情况下，在不同的实现中汇聚可移植的 API 子集。 缺乏普遍支持不会成为开发可移植功能集的障碍。 规范标准化将使我们更容易在支持普及时最终升级到 Core。
 
-### Overlapping Support Levels
+### 重叠支持水平
 
-It is possible for support levels to overlap for a specific field. When this
-occurs, the minimum expressed support level should be interpreted. For example,
-an identical struct may be embedded in two different places. In one of those
-places, the struct is considered to have Core support while the other place only
-includes Extended support. Fields within this struct may express separate Core
-and Extended support levels, but those levels must not be interpreted as
-exceeding the support level of the parent struct they are embedded in.
+特定字段的支持级别有可能重叠。 出现这种情况时，应解释所表达的最低支持级别。 例如，一个相同的结构体可能被嵌入到两个不同的地方。 在其中一个地方，该结构体被认为具有核心支持，而另一个地方只包含扩展支持。 该结构体中的字段可以表达单独的核心和扩展支持级别，但这些级别不得被解释为超出了它们所嵌入的父结构体的支持级别。
 
-For a more concrete example, HTTPRoute includes Core support for filters defined
-within a Rule and Extended support when defined within BackendRef. Those filters
-may separately define support levels for each field. When interpreting
-overlapping support levels, the minimum value should be interpreted. That means
-if a field has a Core support level but is in a filter attached in a place with
-Extended support, the interpreted support level must be Extended.
+举个更具体的例子，HTTPRoute 对在规则中定义的过滤器提供核心支持，而在 BackendRef 中定义的过滤器则提供扩展支持。 这些过滤器可分别为每个字段定义支持级别。 在解释重叠的支持级别时，应解释最小值。 这意味着，如果某个字段的支持级别是核心级别，但在过滤器中附加的支持级别是扩展级别，则解释的支持级别必须是扩展级别。
 
-## 3. Conformance Tests
+## 3. 一致性测试
 
-Gateway API includes a set of conformance tests. These create a series of
-Gateways and Routes with the specified GatewayClass, and test that the
-implementation matches the API specification.
+gateway API 包含一系列一致性测试，这些测试会创建一系列具有指定 gatewayClass 的网关和路由，并测试其实现是否符合 API 规范。
 
-Each release contains a set of conformance tests, these will continue to
-expand as the API evolves. Currently conformance tests cover the majority
-of Core capabilities in the standard channel, in addition to some Extended
-capabilities.
+目前，一致性测试涵盖了标准通道中的大部分核心功能，以及一些扩展功能。
 
-### Running Tests
+#### 运行测试
 
-There are two main contrasting sets of conformance tests:
+一致性测试主要有两套对比测试：
 
-* Gateway related tests (can also be thought of as ingress tests)
-* Service Mesh related tests
+* 网关相关测试（也可视为 ingress 测试）
+* 服务网格相关测试
 
-For `Gateway` tests you must enable the `Gateway` test feature, and then
-opt-in to any other specific tests you want to run (e.g. `HTTPRoute`). For
-Mesh related tests you must enable `Mesh`.
+对于 "Gateway "测试，您必须启用 "Gateway "测试功能，然后选择运行任何其他特定测试（如 "HTTPRoute"）。 对于与 Mesh 相关的测试，您必须启用 "Mesh"。
 
-We'll cover each use case separately, but it's also possible to combine these
-if your implementation implements both. There are also options which pertain
-to the entire test suite regardless of which tests you're running.
+我们将分别介绍每种用例，但如果您的实现同时实现了这两种用例，也可以将它们结合起来。 还有一些选项与整个测试套件有关，无论您运行的是哪种测试。
 
-#### Gateway Tests
+#### gateway 测试
 
-By default `Gateway` oriented conformance tests will expect a GatewayClass
-named `gateway-conformance` to be installed in the cluster, and tests will be
-run against that. Most often, you'll use a different class, which can be
-specified with the `-gateway-class` flag along with the corresponding test
-command. Check your instance for the `gateway-class` name to use. You must
-also enable `Gateway` support and test support for any `*Routes` your
-implementation supports.
+默认情况下，面向 `Gateway` 的一致性测试将在集群中安装名为 `gateway-conformance` 的 GatewayClass，测试将针对该类运行。 通常情况下，您会使用不同的类，可以使用 `-gateway-class` flag 和相应的测试命令来指定该类。 检查您的实例，查看要使用的 `gateway-class` 名称。 您还必须启用 `Gateway` 支持，并为您的实现所支持的任何 `*Routes` 提供测试支持。
 
-The following runs all the tests relevant to `Gateway`, `HTTPRoute`, and
-`ReferenceGrant`:
+下面将运行与 `Gateway`、`HTTPRoute` 和 `ReferenceGrant` 有关的所有测试：
 
 ```shell
 go test ./conformance/... -args \
@@ -106,36 +56,27 @@ go test ./conformance/... -args \
     -supported-features=Gateway,HTTPRoute
 ```
 
-Other useful flags may be found in [conformance flags][cflags].
+其他有用的 flag 可以在 [conformance flags](https://github.com/kubernetes-sigs/gateway-api/blob/main/conformance/utils/flags/flags.go) 中被引用。
 
-[cflags]:https://github.com/kubernetes-sigs/gateway-api/blob/main/conformance/utils/flags/flags.go
+#### 网目测试
 
-#### Mesh Tests
-
-Mesh tests can be run by simply enabling the `Mesh` feature:
+只需启用 "网格 "功能，即可运行网格测试：
 
 ```shell
 go test ./conformance/... -args -supported-features=Mesh
 ```
 
-If your mesh also includes ingress support with an API such as `HTTPRoute`, you
-can run the relevant tests in the same test run by enabling the `Gateway`
-feature and any relevant API features, e.g:
+如果您的网格还包括使用 API（如 `HTTPRoute`）的 ingress 支持，您可以通过启用 `Gateway` 功能和任何相关 API 功能（如 `HTTPRoute`），在同一测试运行中运行相关测试：
 
 ```shell
 go test ./conformance/... -args -supported-features=Mesh,Gateway,HTTPRoute
 ```
 
-#### Namespace Labels and Annotations
+#### 命名空间标签和 Annotations
 
-If labels are needed on namespaces used for testing, you can use the
-`-namespace-labels` flag to pass one or more `name=value` labels to set on the
-test namespaces. Likewise, `-namespace-annotations` can be used to specify
-annotations to be applied to the test namespaces. For mesh testing, this flag
-can be used if an implementation requires labels on namespaces that host mesh
-workloads, for example, to enable sidecar injection.
+如果需要在用于测试的 namespace 上设置标签，可以使用 `-namespace-labels` 标志传递一个或多个 `name=value` 标签，以便在测试 namespace 上设置标签。 同样，可以使用 `-namespace-annotations` 指定要应用于测试 namespace 的注释。 对于网格测试，如果实现需要在承载网格工作负载的 namespace 上设置标签（例如，启用 sidecar 注入），则可以使用此标志。
 
-As an example, when testing Linkerd, you might run
+例如，在测试 Linkerd 时，您可以运行
 
 ```shell
 go test ./conformance/... -args \
@@ -143,15 +84,11 @@ go test ./conformance/... -args \
    -namespace-annotations=linkerd.io/inject=enabled
 ```
 
-so that the test namespaces are correctly injected into the mesh.
+以便将测试 namespace 正确注入网格。
 
-#### Excluding Tests
+#### 不包括测试
 
-The `Gateway` and `ReferenceGrant` features are enabled by default.
-You do not need to explicitly list them using the `-supported-features` flag.
-However, if you don't want to run them, you will need to disable them using
-the `-exempt-features` flag. For example, to run only the `Mesh` tests,
-and nothing else:
+默认情况下，"gateway "和 "ReferenceGrant "功能是启用的。 您无需使用"-supported-features"（支持的功能）flag 明确列出这些功能。 不过，如果您不想运行这些功能，则需要使用"-exempt-features"（豁免的功能）flag 禁用它们。 例如，只运行 "Mesh "测试，而不运行其他测试：
 
 ```shell
 go test ./conformance/... -args \
@@ -159,38 +96,24 @@ go test ./conformance/... -args \
     -exempt-features=Gateway,ReferenceGrant
 ```
 
-#### Suite Level Options
+#### 套房级选项
 
-When running tests of any kind you may not want the test suite to cleanup the
-test resources when it completes (i.e. so that you can inspect the cluster
-state in the event of a failure). You can skip cleanup with:
+在运行任何类型的测试时，您可能不希望测试套件在测试完成后清理测试资源（例如，这样您就可以在测试失败时检查集群状态）。 您可以使用以下方法跳过清理：
 
 ```shell
 go test ./conformance/... -args -cleanup-base-resources=false
 ```
 
-It may be helpful (particularly when working on implementing a specific
-feature) to run a very specific test by name. This can be done using the
-`ShortName` of that test:
+使用测试的 `ShortName` 来运行一个非常具体的测试可能会有帮助（尤其是在实施特定功能时）：
 
 ```shell
 go test ./conformance/... --run TestConformance/<ShortName>
 ```
 
-## Contributing to Conformance
+## 促进一致性
 
-Many implementations run conformance tests as part of their full e2e test suite.
-Contributing conformance tests means that implementations can share the
-investment in test development and ensure that we're providing a consistent
-experience.
+许多实施者都会将一致性测试作为其完整的 e2e 测试套件的一部分来运行。 提供一致性测试意味着实施者可以分担测试开发方面的投资，并确保我们提供一致的体验。
 
-All code related to conformance lives in the "/conformance" directory of the
-project. Test definitions are in "/conformance/tests" with each test including
-a pair of files. A YAML file contains the manifests to be applied as part of
-running the test. A Go file contains code that confirms that an implementation
-handles those manifests appropriately.
+所有与一致性相关的代码都放在项目的"/conformance "目录下。 测试定义放在"/conformance/tests "目录下，每个测试都包含一对文件。 YAML 文件包含运行测试时要应用的配置清单。 Go 文件包含确认实现是否正确处理这些配置清单的代码。
 
-Issues related to conformance are [labeled with
-"area/conformance"](https://github.com/kubernetes-sigs/gateway-api/issues?q=is%3Aissue+is%3Aopen+label%3Aarea%2Fconformance).
-These often cover adding new tests to improve our test coverage or fixing flaws
-or limitations in our existing tests.
+与一致性相关的问题是[标有 "区域/一致性"](https://github.com/kubernetes-sigs/gateway-api/issues?q=is%3Aissue+is%3Aopen+label%3Aarea%2Fconformance)。这些问题通常包括添加新测试以提高我们的测试覆盖率，或修复现有测试中的缺陷或限制。

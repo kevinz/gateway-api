@@ -1,84 +1,61 @@
+<!-- TRANSLATED by md-translate -->
 # GRPCRoute
 
-??? example "Experimental Channel in v0.6.0+"
+例如 "v0.6.0+ 版本中的实验频道"。
 
-    The `GRPCRoute` resource is Alpha and part of the Experimental Channel in
-    `v0.6.0+`. For more information on release channels, refer to the [related
-    documentation](/concepts/versioning).
+```
+The `GRPCRoute` resource is Alpha and part of the Experimental Channel in
+`v0.6.0+`. For more information on release channels, refer to the [related
+documentation](/concepts/versioning).
+```
 
-[GRPCRoute][grpcroute] is a Gateway API type for specifying routing behavior
-of gRPC requests from a Gateway listener to an API object, i.e. Service.
+[GRPCRoute](/reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCPRoute)是一种 gateway API 类型，用于指定 gRPC 请求从 gateway 监听器到 API 对象（即服务）的路由行为。
 
-## Background
+## 背景
 
-While it is possible to route gRPC with `HTTPRoutes` or via custom, out-of-tree
-CRDs, in the long run, this leads to a fragmented ecosystem.
+虽然可以使用 "HTTPRoutes "或通过自定义的树外 CRD 来路由 gRPC，但从长远来看，这会导致生态系统支离破碎。
 
-gRPC is a [popular RPC framework adopted widely across the industry](https://grpc.io/about/#whos-using-grpc-and-why).
-The protocol is used pervasively within the Kubernetes project itself as the basis for
-many interfaces, including:
+gRPC 是一个[被业界广泛引用的流行 RPC 框架](https://grpc.io/about/#whos-using-grpc-and-why)。该协议在 Kubernetes 项目中被普遍引用，是许多接口的基础，包括
 
-- [the CSI](https://github.com/container-storage-interface/spec/blob/5b0d4540158a260cb3347ef1c87ede8600afb9bf/spec.md),
-- [the CRI](https://github.com/kubernetes/cri-api/blob/49fe8b135f4556ea603b1b49470f8365b62f808e/README.md),
-- [the device plugin framework](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/)
+* [CSI](https://github.com/container-storage-interface/spec/blob/5b0d4540158a260cb3347ef1c87ede8600afb9bf/spec.md)、
+* [the CRI](https://github.com/kubernetes/cri-api/blob/49fe8b135f4556ea603b1b49470f8365b62f808e/README.md),
+* [设备插件框架](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/device-plugins/)
 
-Given gRPC's importance in the application-layer networking space and to
-the Kubernetes project in particular, the determination was made not to allow
-the ecosystem to fragment unnecessarily.
+鉴于 gRPC 在应用层网络领域的重要性，尤其是对 Kubernetes 项目的重要性，我们决定不让生态系统出现不必要的分裂。
 
-### Encapsulated Network Protocols
+### 封装网络协议
 
-In general, when it is possible to route an encapsulated protocol at a lower
-level, it is acceptable to introduce a route resource at the higher layer when
-the following criteria are met:
+一般来说，如果可以在较低层对封装协议进行路由，那么在满足以下条件的情况下，在较高层引入路由资源是可以接受的：
 
-- Users of the encapsulated protocol would miss out on significant conventional features from their ecosystem if forced to route at a lower layer.
-- Users of the enapsulated protocol would experience a degraded user experience if forced to route at a lower layer.
-- The encapsulated protocol has a significant user base, particularly in the Kubernetes community.
+* 如果被迫在较低层路由，封装协议的用户将错过其生态系统的重要传统功能。
+* 如果被迫在较低层路由，封装协议的用户将体验到降级的用户体验。
+* 封装协议拥有庞大的用户群，尤其是在 Kubernetes 社区。
 
-gRPC meets all of these criteria, so the decision was made to include `GRPCRoute`in Gateway API.
+gRPC 符合所有这些标准，因此决定将 `GRPCRoute` 纳入 gateway API。
 
 ### Cross Serving
 
-Implementations that support GRPCRoute must enforce uniqueness of
-hostnames between `GRPCRoute`s and `HTTPRoute`s. If a route (A) of type `HTTPRoute` or
-`GRPCRoute` is attached to a Listener and that listener already has another Route (B) of
-the other type attached and the intersection of the hostnames of A and B is
-non-empty, then the implementation must reject Route A. That is, the
-implementation must raise an 'Accepted' condition with a status of 'False' in
-the corresponding RouteParentStatus.
+支持 GRPCRoute 的实现必须强制执行 `GRPCRoute`s 和 `HTTPRoute`s 之间主机名的唯一性。 如果 `HTTPRoute` 或 `GRPCRoute` 类型的路由 (A) 连接到了监听器，而该监听器已连接了另一种类型的路由 (B)，且 A 和 B 的主机名的交集不为空，则实现必须拒绝接受路由 A，也就是说，实现必须在相应的 RouteParentStatus 中引发状态为 "false "的 "已接受 "条件。
 
-In general, it is recommended that separate hostnames be used for gRPC and
-non-gRPC HTTP traffic. This aligns with standard practice in the gRPC community.
-If however, it is a necessity to serve HTTP and gRPC on the same hostname with
-the only differentiator being URI, the user should use `HTTPRoute` resources for
-both gRPC and HTTP. This will come at the cost of the improved UX of the
-`GRPCRoute` resource.
+一般来说，建议为 gRPC 和非 gRPC HTTP 流量分别使用不同的主机名。 这符合 gRPC 社区的标准做法。 不过，如果必须在同一主机名上提供 HTTP 和 gRPC 服务（唯一的区别在于 URI），用户应为 gRPC 和 HTTP 使用 `HTTPRoute` 资源。 这将以改善 `GRPCRoute` 资源的用户体验为代价。
 
 ## Spec
 
-The specification of a GRPCRoute consists of:
+GRPCRoute 的规格包括
 
-- [ParentRefs][parentRef]- Define which Gateways this Route wants to be attached
-  to.
-- [Hostnames][hostname] (optional)- Define a list of hostnames to use for
-  matching the Host header of gRPC requests.
-- [Rules][grpcrouterule]- Define a list of rules to perform actions against
-  matching gRPC requests. Each rule consists of [matches][matches],
-  [filters][filters] (optional), and [backendRefs][backendRef] (optional)
-  fields.
+* [ParentRefs](/reference/spec/#gateway.networking.k8s.io/v1beta1.ParentRef)- 定义此路由要连接到哪些 gateway。
+* [Hostnames](/reference/spec/#gateway.networking.k8s.io/v1beta1.Hostname) （可选）- 定义主机名列表，用于匹配 gRPC 请求的主机头。
+* [规则](/reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCRouteRule)- 定义对匹配的 gRPC 请求执行操作的规则列表。Each rule consists of [matches](/reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCRouteMatch), [filters](/reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCRouteFilter）（可选）和 [backendRefs](/reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCBackendRef) （可选）字段。
 
 <!--- Editable SVG available at site-src/images/grpcroute-basic-example.svg -->
-The following illustrates a GRPCRoute that sends all traffic to one Service:
-![grpcroute-basic-example](/images/grpcroute-basic-example.png)
 
-### Attaching to Gateways
+下面展示了一个将所有流量发送到一个服务的 GRPCRoute： ![grpcroute-basic-example](/images/grpcroute-basic-example.png)
 
-Each Route includes a way to reference the parent resources it wants to attach
-to. In most cases, that's going to be Gateways, but there is some flexibility
-here for implementations to support other types of parent resources.
+### 连接到 gateway
 
-The following example shows how a Route would attach to the `acme-lb` Gateway:
+每个路由都包含一种引用父资源的方式，它希望附加到父资源上。 在大多数情况下，这将是 gateway，但这里也有一些灵活性，可以实现对其他类型父资源的支持。
+
+下面的示例显示了路由如何连接到 `acme-lb` gateway：
 
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1alpha2
@@ -90,25 +67,19 @@ spec:
   - name: acme-lb
 ```
 
-Note that the target Gateway needs to allow GRPCRoutes from the route's
-namespace to be attached for the attachment to be successful.
+请注意，目标 gateway 必须允许路由名称空间中的 GRPCRoutes 被附加，附加才能成功。
 
-### Hostnames
+#### 主机名
 
-Hostnames define a list of hostnames to match against the Host header of the
-gRPC request. When a match occurs, the GRPCRoute is selected to perform request
-routing based on rules and filters (optional). A hostname is the fully qualified
-domain name of a network host, as defined by [RFC 3986][rfc-3986]. Note the
-following deviations from the “host” part of the URI as defined in the RFC:
+主机名（Hostnames）定义了与 gRPC 请求的主机（Host）头匹配的主机名列表。 当出现匹配时，将根据规则和过滤器（可选）选择 GRPCRoute 来执行请求路由。 主机名是网络主机的完全合格域名，由 [RFC 3986](https://tools.ietf.org/html/rfc3986) 所定义。请注意以下与 RFC 中定义的 URI 的 "host "部分的偏差：
 
-- IPs are not allowed.
-- The : delimiter is not respected because ports are not allowed.
+* 不允许使用 IP。
+* 由于不允许使用端口，因此不使用 : 分隔符。
 
-Incoming requests are matched against hostnames before the GRPCRoute rules are
-evaluated. If no hostname is specified, traffic is routed based on GRPCRoute
-rules and filters (optional).
+如果未指定主机名，则根据 GRPCRoute 规则和过滤器（可选）对流量进行路由。
 
-The following example defines hostname "my.example.com":
+下面的示例定义了主机名 "my.example.com"：
+
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: GRPCRoute
@@ -119,18 +90,16 @@ spec:
   - my.example.com
 ```
 
-### Rules
+### 规则
 
-Rules define semantics for matching an gRPC requests based on conditions,
-optionally executing additional processing steps, and optionally forwarding
-the request to an API object.
+规则定义了根据条件匹配 gRPC 请求、执行附加处理步骤和将请求转发给 API 对象的语义。
 
-#### Matches
+#### 匹配
 
-Matches define conditions used for matching an gRPC requests. Each match is
-independent, i.e. this rule will be matched if any single match is satisfied.
+匹配定义了用于匹配 gRPC 请求的条件。 每个匹配都是独立的，也就是说，如果满足任何一个匹配条件，该规则就会被匹配。
 
-Take the following matches configuration as an example:
+以下面的匹配配置为例：
+
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: GRPCRoute
@@ -147,95 +116,69 @@ matches:
       method: Login
 ```
 
-For a request to match against this rule, it must satisfy EITHER of the
-following conditions:
+请求必须满足以下任一条件，才能与本规则相匹配：
 
- - The `com.example.User.Login` method **AND** contains the header "version: 2"
- - The `com.example.v2.User.Login` method.
+* com.example.User.Login "方法 ***和***包含 "version: 2 "标头。
+* com.example.v2.User.Login "方法。
 
-If no matches are specified, the default is to match every gRPC request.
+如果未指定匹配项，则默认匹配每个 gRPC 请求。
 
-#### Filters (optional)
+#### 过滤器（可选）
 
-Filters define processing steps that must be completed during the request or
-response lifecycle. Filters act as an extension point to express additional
-processing that may be performed in Gateway implementations. Some examples
-include request or response modification, implementing authentication
-strategies, rate-limiting, and traffic shaping.
+过滤器定义了在请求或响应生命周期内必须完成的处理步骤。 过滤器作为一个扩展点，可用于表达 gateway 实现中可能执行的附加处理。 一些例子包括请求或响应修改、实施身份验证策略、速率限制和流量整形。
 
-The following example adds header "my-header: foo" to gRPC requests with Host
-header "my.filter.com". Note that GRPCRoute uses HTTPRoute filters for features
-with functionality identical to HTTPRoute, such as this.
+下面的示例为带有主机标头 "my.filter.com "的 gRPC 请求添加了标头 "my-header: foo"。请注意，GRPCRoute 使用 HTTPRoute 过滤器来实现与 HTTPRoute 功能相同的功能，比如这样。
 
 ```yaml
 {% include 'experimental/grpc-filter.yaml' %}
 ```
 
-API conformance is defined based on the filter type. The effects of ordering
-multiple behaviors are currently unspecified. This may change in the future
-based on feedback during the alpha stage.
+API 的一致性是根据过滤器类型来定义的。 目前还未说明多种行为排序的效果。 今后可能会根据 alpha 阶段的反馈意见进行修改。
 
-Conformance levels are defined by the filter type:
+一致性级别由过滤器类型定义：
 
- - All "core" filters MUST be supported by implementations supporting GRPCRoute.
- - Implementers are encouraged to support "extended" filters.
- - "Implementation-specific" filters have no API guarantees across implementations.
+* 支持 GRPCRoute 的实现必须支持所有 "核心 "过滤器。
+* 我们鼓励实现者支持 "扩展自 "过滤器。
+* "特定于实现的 "过滤器没有跨实现的 API 保证。
 
-Specifying a core filter multiple times has unspecified or custom conformance.
+多次指定核心过滤器会产生未指定或自定义的一致性。
 
-If an implementation can not support a combinations of filters, they must clearly
-document that limitation. In cases where incompatible or unsupported
-filters are specified and cause the `Accepted` condition to be set to status
-`False`, implementations may use the `IncompatibleFilters` reason to specify
-this configuration error.
+如果实现无法支持过滤器组合，则必须明确记录这一限制。 如果指定了不兼容或不支持的过滤器，并导致 "已接受 "条件被设置为状态 "false"，则实现可使用 "IncompatibleFilters "原因来指定此配置错误。
 
-#### BackendRefs (optional)
+#### BackendRefs（可选）
 
-BackendRefs defines the API objects to which matching requests should be sent. If
-unspecified, the rule performs no forwarding. If unspecified and no filters
-are specified that would result in a response being sent, an `UNIMPLEMENTED` error code
-is returned.
+BackendRefs 定义了应向其发送匹配请求的 API 对象。 如果未指定，则规则不执行转发。 如果未指定且未指定会导致发送响应的过滤器，则会返回 `UNIMPLEMENTED` 错误代码。
 
+下面的示例将方法 `User.Login` 的 gRPC 请求转发给端口 `50051` 上的服务 "my-service1"，并将标头为 `magic: foo` 的方法 `Things.DoThing` 的 gRPC 请求转发给端口 `50051` 上的服务 "my-service2"：
 
-
-The following example forwards gRPC requests for the method `User.Login` to service
-"my-service1" on port `50051` and gRPC requests for the method `Things.DoThing` with
-header `magic: foo` to service "my-service2" on port `50051`:
 ```yaml
 {% include 'experimental/basic-grpc.yaml' %}
 ```
 
-The following example uses the `weight` field to forward 90% of gRPC requests to
-`foo.example.com` to the "foo-v1" Service and the other 10% to the "foo-v2"
-Service:
+下面的示例使用了 `weight` 字段，将 90% 发往 `foo.example.com` 的 gRPC 请求转发给 "foo-v1 "服务，另外 10% 转发给 "foo-v2 "服务：
+
 ```yaml
 {% include 'experimental/traffic-splitting/grpc-traffic-split-2.yaml' %}
 ```
 
-Reference the [backendRef][backendRef] API documentation for additional details
-on `weight` and other fields.
+请参考 [backendRef](/reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCBackendRef) API 文档，了解有关`权重`和其他字段的更多详情。
 
-## Status
+## 状态
 
-Status defines the observed state of the GRPCRoute.
+状态定义了 GRPCRoute 的观察状态。
 
-### RouteStatus
+### 路由状态
 
-RouteStatus defines the observed state that is required across all route types.
+RouteStatus 定义了所有路由类型都需要的观察状态。
 
-#### Parents
+#### 家长
 
-Parents define a list of the Gateways (or other parent resources) that are
-associated with the GRPCRoute, and the status of the GRPCRoute with respect to
-each of these Gateways. When a GRPCRoute adds a reference to a Gateway in
-parentRefs, the controller that manages the Gateway should add an entry to this
-list when the controller first sees the route and should update the entry as
-appropriate when the route is modified.
+父资源定义了与 GRPCRoute 相关联的 gateway（或其他父资源）列表，以及 GRPCRoute 相对于这些 gateway 的状态。 当 GRPCRoute 在 parentRefs 中添加对 gateway 的引用时，管理 gateway 的控制器应在首次看到该路由时向该列表添加条目，并应在修改路由时适当更新条目。
 
-## Examples
+## 示例
 
-The following example indicates GRPCRoute "grpc-example" has been accepted by
-Gateway "gw-example" in namespace "gw-example-ns":
+下面的示例表明 GRPCRoute "grpc-example "已被名称空间 "gw-example-ns "中的 gateway "gw-example "接受：
+
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1alpha2
 kind: GRPCRoute
@@ -253,17 +196,5 @@ status:
 ```
 
 ## Merging
-Multiple GRPCRoutes can be attached to a single Gateway resource. Importantly,
-only one Route rule may match each request. For more information on how conflict
-resolution applies to merging, refer to the [API specification][grpcrouterule].
 
-
-[grpcroute]: /reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCPRoute
-[grpcrouterule]: /reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCRouteRule
-[hostname]: /reference/spec/#gateway.networking.k8s.io/v1beta1.Hostname
-[rfc-3986]: https://tools.ietf.org/html/rfc3986
-[matches]: /reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCRouteMatch
-[filters]: /reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCRouteFilter
-[backendRef]: /reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCBackendRef
-[parentRef]: /reference/spec/#gateway.networking.k8s.io/v1beta1.ParentRef
-
+单个 gateway 资源可附加多个 GRPCRoutes。 重要的是，每个请求只能匹配一个 Route 规则。 有关冲突解决如何应用于合并的更多信息，请参阅 [API 规范](/reference/spec/#gateway.networking.k8s.io/v1alpha2.GRPCRouteRule)。

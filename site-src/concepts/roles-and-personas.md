@@ -1,80 +1,57 @@
-# Roles and Personas
+<!-- TRANSLATED by md-translate -->
+# 角色和角色定位
 
-## Background
+## 背景
 
-In the original design of Kubernetes, Ingress and Service resources were based
-on a usage model in which the developers who create Services and Ingresses
-controlled all aspects of defining and exposing their applications to their
-users.
+在 Kubernetes 的最初设计中，Usage 和服务资源是基于一种使用模式，在这种模式下，创建服务和 Ingresses 的开发人员控制着定义应用程序并将其公开给用户的所有方面。
 
-In practice, though, clusters and their infrastructure tend to be shared,
-which the original Ingress model doesn't capture very well. A critical factor
-is that when infrastructure is shared, not everyone using the infrastructure
-has the same concerns, and to be successful, an infrastructure project needs
-to address the needs of all the users.
+但在实践中，集群及其基础设施往往是共享的，而最初的 ingress 模型并没有很好地捕捉到这一点。 一个关键因素是，当基础设施是共享的时候，并不是每个使用基础设施的人都有同样的关注点，要想取得成功，基础设施项目需要满足所有用户的需求。
 
-This raises a fundamental challenge: how do you provide the flexibility needed
-by the users of the infrastructure, while also maintaining control by the
-owners of the infrastructure?
+这就提出了一个根本性的挑战：如何既能提供基础设施用户所需的灵活性，又能保持基础设施 Owner 的控制权？
 
-Gateway API defines several distinct roles, each with an associated
-_persona_, as a tool for surfacing and discussing the differing needs of
-different users in order to balance usability, flexibility, and control.
-Design work within Gateway API is deliberately cast in terms of these
-personas.
+gateway API 定义了几种不同的角色，每种角色都有一个相关的 "角色"（persona），以此来显示和讨论不同用户的不同需求，从而在可用性、灵活性和控制性之间取得平衡。 Gateway API 中的设计工作都是有意按照这些 "角色 "来进行的。
 
-Note that, depending on the environment, a single human may end up taking on
-multiple roles, as discussed below.
+需要注意的是，根据不同的环境，一个人最终可能会扮演多种角色，下文将对此进行讨论。
 
-## Key Roles and Personas
+## 关键角色和角色定位
 
-Gateway API defines three roles and personas:
+gateway API 定义了三种角色和人物：
 
-* **Ian**<a name="ian"></a> (he/him) is an _infrastructure provider_,
-  responsible for the care and feeding of a set of infrastructure that permits
-  multiple isolated clusters to serve multiple tenants. He is not beholden to
-  any single tenant; rather, he worries about all of them collectively. Ian
-  will often work for a cloud provider (AWS, Azure, GCP, ...) or for a PaaS
-  provider.
+* **Ian**<a name="ian"></a> （他/他）是_基础设施提供者_、
+负责管理和喂养一套基础设施，允许
+集群为多个租户提供服务。他不受制于
+他不受制于任何一个租户；相反，他为所有租户集体操心。伊恩
+通常会为云 Providers（AWS、Azure、GCP......）或 PaaS
+Provider 工作。
+* **Chihiro**<a name="Chihiro"></a> （他们/他们）是集群操作员、
+负责管理集群，以确保集群满足多个用户的需求。
+用户的需求。Chihiro 通常会关注策略、
+网络访问、应用程序权限等。同样，他们不
+任何集群的单一用户；相反，他们需要确保集群为所有用户提供所需的服务。
+为所有用户提供所需的服务。
+* **Ana**<a name="ana"></a> （她/她）是_应用程序开发人员_、
+负责创建和管理在集群中运行的应用程序。
+从 gateway API 的角度来看，Ana 需要管理配置
+(例如超时、请求匹配/过滤）和服务组成（例如路径
+路由到后端）。在 gateway API 角色中，她处于一个独特的位置。
+角色中处于独特的地位，因为她关注的是她的应用程序要服务的业务需求
+而不是 Kubernetes 或 gateway API。事实上，安娜很可能
+认为 Gateway API 和 Kubernetes 纯粹是妨碍她完成任务的摩擦因素。
+完成工作的障碍。
 
-* **Chihiro**<a name="Chihiro"></a> (they/them) is a _cluster operator_,
-  responsible for managing clusters to ensure that they meet the needs of
-  their several users. Chihiro will typically be concerned with policies,
-  network access, application permissions, etc. Again, they are beholden to no
-  single user of any cluster; rather, they need to make sure that the clusters
-  serve all users as needed.
+根据环境的不同，多个角色可以映射到同一个用户：
 
-* **Ana**<a name="ana"></a> (she/her) is an _application developer_,
-  responsible for creating and managing an application running in a cluster.
-  From Gateway API's point of view, Ana will need to manage configuration
-  (e.g. timeouts, request matching/filter) and Service composition (e.g. path
-  routing to backends). She is in a unique position among Gateway API
-  personas, since her focus is on the business needs her application is meant
-  to serve, _not_ Kubernetes or Gateway API. In fact, Ana is likely to
-  view Gateway API and Kubernetes as pure friction getting in her way to
-  get things done.
-
-Depending on the environment, multiple roles can map to the same user:
-
-- Giving a single user all the above roles replicates the self-service model,
-  and may actually happen in a small startup running Kubernetes on bare metal.
-
-- A more typical small startup would use clusters from a cloud provider. In
-  this situation, Ana and Chihiro may be embodied in the same person, with Ian
-  being an employee (or automated process!) within the cloud provider.
-
-- In a much larger organization, we would expect each persona above to be
-  embodied by a distinct person (most likely working in different groups,
-  perhaps with little direct contact).
+* 赋予单个用户上述所有角色可以复制自助服务模式、
+在裸机上运行 Kubernetes 的小型初创公司可能会这样做。
+* 更典型的小型初创企业会被引用云计算 Provider 的集群。在
+在这种情况下，Ana 和 Chihiro 可能是同一个人，而 Ian
+是云提供商的一名员工（或自动化流程！）。
+* 在规模更大的企业中，我们希望上述每个角色都由不同的人
+由不同的人体现（很可能在不同的小组工作、
+可能很少直接接触）。
 
 ## RBAC
 
-RBAC (role-based access control) is the standard used for Kubernetes
-authorization. This allows users to configure who can perform actions on
-resources in specific scopes. We anticipate that each persona will map
-approximately to a `Role` in the Kubernetes Role-Based Authentication (RBAC)
-system and will define resource model responsibility and separation.
+RBAC（基于角色的访问控制）是用于 Kubernetes 授权的标准。 这允许用户配置谁可以在特定范围内对资源执行操作。 我们预计，每个角色都将近似映射到 Kubernetes 基于角色的身份验证（RBAC）系统中的 "角色"，并将定义资源模型的责任和分离。
 
-RBAC is discussed further in the [Security Model] description.
-
-[Security Model]: /concepts/security-model#rbac
+安全模型](/concepts/security-model#rbac)描述中将进一步讨论 RBAC。

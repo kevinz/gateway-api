@@ -1,15 +1,15 @@
-# GatewayClass
+<!-- TRANSLATED by md-translate -->
+# 网关类
 
-??? success "Standard Channel in v0.5.0+"
+成功 "V0.5.0+ 版本中的标准通道"。
 
-    The `GatewayClass` resource is Beta and part of the Standard Channel in `v0.5.0+`.
+```
+The `GatewayClass` resource is Beta and part of the Standard Channel in `v0.5.0+`.
+```
 
-[GatewayClass][gatewayclass] is cluster-scoped resource defined by the
-infrastructure provider. This resource represents a class of Gateways that can
-be instantiated.
+[GatewayClass](/reference/spec/#gateway.networking.k8s.io/v1beta1.GatewayClass)是基础架构 Providers 定义的集群范围资源。 该资源代表可实例化的 gateway 类。
 
-> Note: GatewayClass serves the same function as the
-> [`networking.IngressClass` resource][ingress-class-api].
+&gt; 注：GatewayClass 与 &gt; [`networking.IngressClass` 资源](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class) 的功能相同。
 
 ```yaml
 kind: GatewayClass
@@ -19,12 +19,7 @@ spec:
   controllerName: "example.net/gateway-controller"
 ```
 
-We expect that one or more `GatewayClasses` will be created by the
-infrastructure provider for the user. It allows decoupling of which mechanism
-(e.g. controller) implements the `Gateways` from the user. For instance, an
-infrastructure provider may create two `GatewayClasses` named `internet` and
-`private` to reflect `Gateways` that define Internet-facing vs private, internal
-applications.
+我们预计基础设施 Provider 将为用户创建一个或多个 "GatewayClasses"。 它允许将实现 "Gateway "的机制（如控制器）与用户解耦。 例如，基础设施 Provider 可创建名为 "internet "和 "private "的两个 "GatewayClasses"，以反映定义面向互联网与私人内部应用程序的 "Gateway"。
 
 ```yaml
 kind: GatewayClass
@@ -38,15 +33,11 @@ metadata:
   ...
 ```
 
-The user of the classes will not need to know *how* `internet` and `private` are
-implemented. Instead, the user will only need to understand the resulting
-properties of the class that the `Gateway` was created with.
+类的用户不需要知道 `internet` 和 `private` 是如何实现的，而只需要了解与 `Gateway` 一起创建的类的结果属性。
 
-### GatewayClass parameters
+### 网关类参数
 
-Providers of the `Gateway` API may need to pass parameters to their controller
-as part of the class definition. This is done using the
-`GatewayClass.spec.parametersRef` field:
+作为类定义的一部分，"gateway "API 的 Provider 可能需要将参数传递给其控制器。 这可被 "GatewayClass.spec.parametersRef "字段引用：
 
 ```yaml
 # GatewayClass for Gateways that define Internet-facing applications.
@@ -69,14 +60,11 @@ spec:
   ...
 ```
 
-Using a Custom Resource for `GatewayClass.spec.parametersRef` is encouraged
-but implementations may resort to using a ConfigMap if needed.
+我们鼓励为 `GatewayClass.spec.parametersRef`使用自定义资源，但如果需要，实现者可以使用 ConfigMap。
 
-### GatewayClass status
+### 网关类状态
 
-`GatewayClasses` MUST be validated by the provider to ensure that the configured
-parameters are valid. The validity of the class will be signaled to the user via
-`GatewayClass.status`:
+Provider 必须验证 `GatewayClasses` 以确保配置的参数有效。 类的有效性将通过 `GatewayClass.status`向用户发出信号：
 
 ```yaml
 kind: GatewayClass
@@ -88,10 +76,7 @@ status:
     ...
 ```
 
-A new `GatewayClass` will start with the `Accepted` condition set to
-`False`. At this point the controller has not seen the configuration. Once the
-controller has processed the configuration, the condition will be set to
-`True`:
+一个新的 `GatewayClass` 开始时，其 `Accepted` 条件将设为 `False`。 此时控制器尚未看到配置。 一旦控制器处理了配置，该条件将设为 `True`：
 
 ```yaml
 kind: GatewayClass
@@ -103,8 +88,7 @@ status:
     ...
 ```
 
-If there is an error in the `GatewayClass.spec`, the conditions will be
-non-empty and contain information about the error.
+如果 `GatewayClass.spec` 中出现错误，条件将是非空的，并包含错误信息。
 
 ```yaml
 kind: GatewayClass
@@ -117,27 +101,16 @@ status:
     Message: "foobar" is an FooBar.
 ```
 
-### GatewayClass controller selection
+### 选择网关类控制器
 
-The `GatewayClass.spec.controller` field determines the controller implementation
-responsible for managing the `GatewayClass`. The format of the field is opaque
-and specific to a particular controller. The GatewayClass selected by a given
-controller field depends on how various controller(s) in the cluster interpret
-this field.
+GatewayClass.spec.controller "字段决定了负责管理 "GatewayClass "的控制器实现。 该字段的格式不透明，是特定控制器的特有格式。 特定控制器字段选择的 GatewayClass 取决于集群中各种控制器如何解释该字段。
 
-It is RECOMMENDED that controller authors/deployments make their selection
-unique by using a domain / path combination under their administrative control
-(e.g. controller managing of all `controller`s starting with `example.net` is the
-owner of the `example.net` domain) to avoid conflicts.
+建议控制器作者/部署使用其管理控制下的域/路径组合（例如，管理以 "example.net "开头的所有 "控制器 "的控制器是 "example.net "域的所有者），使其选择具有唯一性，以避免冲突。
 
-Controller versioning can be done by encoding the version of a controller into
-the path portion. An example scheme could be (similar to container URIs):
+控制器版本可以通过在路径部分编码控制器的版本来实现。 一个示例方案可以是（类似于容器 URI）：
 
 ```text
 example.net/gateway/v1   // Use version 1
 example.net/gateway/v2.1 // Use version 2.1
 example.net/gateway      // Use the default version
 ```
-
-[gatewayclass]: /reference/spec/#gateway.networking.k8s.io/v1beta1.GatewayClass
-[ingress-class-api]: https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class

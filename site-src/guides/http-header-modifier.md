@@ -1,28 +1,28 @@
-# HTTP Header Modifiers
+<!-- TRANSLATED by md-translate -->
+# HTTP 标头修饰符
 
-[HTTPRoute resources](/api-types/httproute) can modify the headers of HTTP requests and the HTTP responses from clients. 
-There are two types of [filters](/api-types/httproute#filters-optional) available to meet these requirements: `RequestHeaderModifier` and `ResponseHeaderModifier`.
+[HTTPRoute资源](/api-types/httproute)可以修改HTTP请求的头和客户端的HTTP响应。 有两种[过滤器](/api-types/httproute#filters-optional)可以满足这些要求："RequestHeaderModifier "和 "ResponseHeaderModifier"。
 
-This guide shows how to use these features.
+本指南介绍了如何被引用这些功能。
 
-Note that these features are compatible. HTTP headers of the incoming requests and the headers of their responses can both be modified using a single [HTTPRoute resource](/api-types/httproute).
+请注意，这些功能是兼容的。传入请求的 HTTP 标头及其响应的标头都可以使用一个 [HTTPRoute 资源]（/api-types/httproute）来修改。
 
-## HTTP Request Header Modifier
+### HTTP 请求头修改器
 
-HTTP header modification is the process of adding, removing, or modifying HTTP headers in incoming requests. 
+HTTP 标头修改是在传入请求中添加、删除或修改 HTTP 标头的过程。
 
-To configure HTTP header modification, define a Gateway object with one or more HTTP filters. Each filter specifies a specific modification to make to incoming requests, such as adding a custom header or modifying an existing header.
+要配置 HTTP 标头修改，可定义一个带有一个或多个 HTTP 过滤器的 gateway 对象。 每个过滤器指定对传入请求进行的特定修改，如添加自定义标头或修改现有标头。
 
-To add a header to a HTTP request, use a filter of the type `RequestHeaderModifier`, with the `add` action and the name and value of the header:
+要在 HTTP 请求中添加头信息，请使用类型为 "RequestHeaderModifier "的过滤器，并加上 "add "操作以及头信息的名称和值：
 
 ```yaml
 {% include 'standard/http-request-header-add.yaml' %}
 ```
 
-To edit an existing header, use the `set` action and specify the value of the header to be modified and the new header value to be set.
+要编辑现有标头，请使用 `set` 操作，并指定要修改的标头值和要设置的新标头值。
 
 ```yaml
-    filters:
+filters:
     - type: RequestHeaderModifier
       requestHeaderModifier:
         set: 
@@ -30,29 +30,29 @@ To edit an existing header, use the `set` action and specify the value of the he
             value: my-new-header-value
 ```
 
-Headers can also be removed, by using the `remove` keyword and a list of header names. 
+还可以通过使用 `remove` 关键字和标题名称列表来删除标题。
 
 ```yaml
-    filters:
+filters:
     - type: RequestHeaderModifier
       requestHeaderModifier:
         remove: ["x-request-id"]
 ```
 
-Using the example above would remove the `x-request-id` header from the HTTP request.
+被引用后，HTTP 请求中的 `x-request-id` 头信息就会被移除。
 
-### HTTP Response Header Modifier
+### HTTP 响应头修改器
 
-Just like editing request headers can be useful, the same goes for response headers. For example, it allows teams to add/remove cookies for only a certain backend, which can help in identifying certain users that were redirected to that backend previously.
+就像编辑请求标头有用一样，编辑响应标头也同样有用。 例如，它允许团队只为某个后端添加/删除 cookie，这有助于识别之前被重定向到该后端的某些用户。
 
-Another potential use case could be when you have a frontend that needs to know whether it’s talking to a stable or a beta version of the backend server, in order to render different UI or adapt its response parsing accordingly.
+另一个可能的用例是，当你的前端需要知道它是在与稳定版还是测试版的后端服务器通信时，才能呈现不同的用户界面或相应地调整响应解析。
 
-Modifying the HTTP header response leverages a very similar syntax to the one used to modify the original request, albeit with a different filter (`ResponseHeaderModifier`).
+修改 HTTP 头响应使用的语法与修改原始请求被引用的语法非常相似，只是过滤器（`ResponseHeaderModifier`）不同。
 
-Headers can be added, edited and removed. Multiple headers can be added, as shown in this example below:
+可以添加、编辑和删除标题，也可以添加多个标题，如下图所示：
 
 ```yaml
-    filters:
+filters:
     - type: ResponseHeaderModifier
       responseHeaderModifier:
         add:

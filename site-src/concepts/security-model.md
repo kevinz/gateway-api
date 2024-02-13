@@ -1,63 +1,45 @@
-# Security Model
+<!-- TRANSLATED by md-translate -->
+# 安全模式
 
-## Introduction
-Gateway API has been designed to enable granular authorization for each role in
-a typical organization.
+## 简介
 
-## Resources
-Gateway API has 3 primary API resources:
+gateway 应用程序接口的设计可实现对典型组织中每个角色的细粒度授权。
 
-* **GatewayClass** defines a set of gateways with a common configuration and
-  behavior.
-* **Gateway** requests a point where traffic can be translated to Services
-  within the cluster.
-* **Routes** describe how traffic coming via the Gateway maps to the Services.
+## 资源
 
-## Roles and personas
+gateway API 有 3 个主要的 API 资源：
 
-There are 3 primary roles in Gateway API, as described in [roles and personas]:
+* **GatewayClass** 定义了一组具有共同配置和行为的网关。
+* **网关**请求将流量转换到集群内服务的一个点。
+* **路由**描述了通过 gateway 来的流量如何映射到服务。
 
-- **Ian** (he/him): Infrastructure Provider
-- **Chihiro** (they/them): Cluster Operator
-- **Ana** (she/her): Application Developer
+## 角色和人物
 
-[roles and personas]:/concepts/roles-and-personas
+gateway API 中有 3 种主要角色，详见 [roles and personas](/concepts/roles-and-personas)：
+
+* **伊恩**（他/他）：基础设施提供商
+* **Chihiro**（他们/他们）：集群操作员
+* **安娜**（她/他）：应用程序开发人员应用程序开发人员
 
 ### RBAC
 
-RBAC (role-based access control) is the standard used for Kubernetes
-authorization. This allows users to configure who can perform actions on
-resources in specific scopes. RBAC can be used to enable each of the roles
-defined above. In most cases, it will be desirable to have all resources be
-readable by most roles, so instead we'll focus on write access for this model.
+RBAC（基于角色的访问控制）是用于 Kubernetes 授权的标准。 它允许用户配置谁可以在特定范围内对资源执行操作。 RBAC 可用于启用上文定义的每个角色。 在大多数情况下，希望所有资源都能被大多数角色读取，因此我们将重点关注该模型的写入访问权限。
 
-#### Write Permissions for Simple 3 Tier Model
-| | GatewayClass | Gateway | Route |
-|-|-|-|-|
-| Infrastructure Provider | Yes | Yes | Yes |
-| Cluster Operators | No | Yes | Yes |
-| Application Developers | No | No | Yes |
+#### 简单三层模型的写入权限
 
-#### Write Permissions for Advanced 4 Tier Model
-| | GatewayClass | Gateway | Route |
-|-|-|-|-|
-| Infrastructure Provider | Yes | Yes | Yes |
-| Cluster Operators | Sometimes | Yes | Yes |
-| Application Admins | No | In Specified Namespaces | In Specified Namespaces |
-| Application Developers | No | No | In Specified Namespaces |
+| | 网关类 | 网关 | 路由 | |-|-|-|-| | 基础设施提供商 | 是 | 是 | 是 | 集群运营商 | 否 | 是 | 是 | 应用开发人员 | 否 | 否 | 是 | 是
 
-## Crossing Namespace Boundaries
-Gateway API provides new ways to cross namespace boundaries. These
-cross-namespace capabilities are quite powerful but need to be used carefully to
-avoid accidental exposure. As a rule, every time we allow a namespace boundary
-to be crossed, we require a handshake between namespaces. There are 2 different
-ways that can occur:
+#### 高级 4 层模型的写入权限
 
-### 1. Route Binding
-Routes can be connected to Gateways in different namespaces. To accomplish this,
-The Gateway owner must explicitly allow Routes to bind from additional
-namespaces. This is accomplished by configuring allowedRoutes within a Gateway
-listener to look something like this:
+| | 网关类 | 网关 | 路由 | |-|-||-| | 基础设施提供商 | 是 | 是 | 是 | 集群操作员 | 有时 | 是 | 是 | 应用程序管理员 | 否 | 在指定的命名空间中 | 在指定的命名空间中 | 应用程序开发人员 | 否 | 否 | 在指定的命名空间中 | 在指定的命名空间中
+
+## 跨越 namespace 边界
+
+Providers API 提供了跨越名称空间边界的新方法。 这些跨名称空间的功能相当强大，但需要谨慎使用，以避免意外暴露。 按照规定，每次允许跨越名称空间边界时，我们都需要在名称空间之间进行握手。 这可能有 2 种不同的方式：
+
+#### 1.
+
+路由可以连接到不同名称空间的 gateway。 要做到这一点，Gateway 所有者必须明确允许路由从其他名称空间绑定。 要做到这一点，可以在 Gateway 监听器中配置 allowedRoutes，如下所示：
 
 ```yaml
 namespaces:
@@ -71,41 +53,24 @@ namespaces:
       - bar
 ```
 
-This will allow routes from the "foo" and "bar" namespaces to attach to this
-Gateway listener.
+这将允许来自 "foo "和 "bar "名称空间的路由附加到此 gateway 监听器。
 
-#### Risks of Other Labels
-Although it's possible to use other labels with this selector, it is not quite
-as safe. While the `kubernetes.io/metadata.name` label is consistently set on
-namespaces to the name of the namespace, other labels do not have the same
-guarantee. If you used a custom label such as `env`, anyone that is able to
-label namespaces within your cluster would effectively be able to change the set
-of namespaces your Gateway supported.
+#### 其他标签的风险
 
-### 2. ReferenceGrant
-There are some cases where we allow other object references to cross namespace
-boundaries. This includes Gateways referencing Secrets and Routes referencing
-Backends (usually Services). In these cases, the required handshake is
-accomplished with a ReferenceGrant resource. This resource exists within a
-target namespace and can be used to allow references from other namespaces.
+虽然可以用这个选择器来使用其他标签，但它并不那么安全。 虽然 `kubernetes.io/metadata.name` 标签在名称空间上会被一致设置为名称空间的名称，但其他标签却没有同样的保证。 如果你被引用了一个自定义标签，如 `env`，那么任何能够在你的集群内给名称空间贴标签的人实际上都能改变你的 gateway 所支持的名称空间集。
 
-For example, the following ReferenceGrant allows references from HTTPRoutes in
-the "prod" namespace to Services that are deployed in the same namespace as
-the ReferenceGrant.
+### 2.
+
+在某些情况下，我们允许其他对象引用跨越名称空间边界，包括 gateway 引用 secret 和 Routes 引用后端（通常是服务）。 在这些情况下，所需的握手是通过 ReferenceGrant 资源完成的。 该资源存在于目标名称空间中，可用于允许其他名称空间的引用。
+
+例如，下面的 ReferenceGrant 允许从 "prod "名称空间中的 HTTPRoutes 引用到与 ReferenceGrant 部署在同一名称空间中的服务。
 
 ```yaml
 {% include 'standard/reference-grant.yaml' %}
 ```
 
-For more information on ReferenceGrant, refer to our [detailed documentation
-for this resource](/api-types/referencegrant).
+有关 ReferenceGrant 的更多信息，请参阅我们的[该资源的详细文档](/api-types/referencegrant)。
 
-## Advanced Concept: Limiting Namespaces Where a GatewayClass Can Be Used
-Some infrastructure providers or cluster operators may wish to limit the
-namespaces where a GatewayClass can be used. At this point, we do not have a
-solution for this built into the API. In lieu of that, we recommend using a
-policy agent such as Open Policy Agent and
-[Gatekeeper](https://github.com/open-policy-agent/gatekeeper) to enforce these
-kinds of policies. For reference, we've created an [example of
-configuration](https://github.com/open-policy-agent/gatekeeper-library/pull/24)
-that could be used for this.
+### 高级概念：限制可被引用网关类的 namespace
+
+一些基础设施提供商或集群运营商可能希望限制可以使用 GatewayClass 的 namespace。 目前，我们还没有在 API 中内置这方面的解决方案。 我们建议使用 Open Policy Agent 和 [Gatekeeper](https://github.com/open-policy-agent/gatekeeper) 等策略代理来执行此类策略，以供参考。我们创建了一个 [配置示例](https://github.com/open-policy-agent/gatekeeper-library/pull/24)，可用于此目的。

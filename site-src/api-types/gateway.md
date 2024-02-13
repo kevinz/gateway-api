@@ -1,51 +1,40 @@
-# Gateway
+<!-- TRANSLATED by md-translate -->
+# gateway
 
-??? success "Standard Channel in v0.5.0+"
+成功 "V0.5.0+ 版本中的标准通道"。
 
-    The `Gateway` resource is Beta and part of the Standard Channel in `v0.5.0+`.
+```
+The `Gateway` resource is Beta and part of the Standard Channel in `v0.5.0+`.
+```
 
-A `Gateway` is 1:1 with the lifecycle of the configuration of infrastructure.
-When a user creates a `Gateway`, some load balancing infrastructure is
-provisioned or configured (see below for details) by the `GatewayClass`
-controller. `Gateway` is the resource that triggers actions in this API. Other
-resources in this API are configuration snippets until a Gateway has been
-created to link the resources together.
+Gateway "与基础设施配置的生命周期为 1:1。 当用户创建一个 "Gateway "时，一些负载平衡基础设施将由 "GatewayClass "控制器进行供应或配置（详见下文）。"Gateway "是触发此 API 中操作的资源。 此 API 中的其他资源是配置片段，直到创建 Gateway 将资源连接在一起。
 
-The `Gateway` spec defines the following:
+gateway` 规格定义如下：
 
-*   `GatewayClassName`- Defines the name of a `GatewayClass` object used by
-    this Gateway.
-*   `Listeners`-  Define the hostnames, ports, protocol, termination, TLS
-    settings and which routes can be attached to a listener.
-*   `Addresses`- Define the network addresses requested for this gateway.
+* `GatewayClassName`- 定义该 gateway 被引用的 `GatewayClass` 对象的名称。
+* 侦听器`- 定义侦听器的主机名、端口、协议、终止、TLS 设置以及可附加到侦听器的路由。
+* `Addresses`- 定义为该网关请求的网络地址。
 
-If the desired configuration specified in Gateway spec cannot be achieved, the
-Gateway will be in an error state with details provided by status conditions.
+如果无法实现 gateway spec 中指定的所需配置，网关将处于出错状态，详细情况由状态条件提供。
 
-### Deployment models
+#### 部署模式
 
-Depending on the `GatewayClass`, the creation of a `Gateway` could do any of
-the following actions:
+根据 `GatewayClass` 的不同，创建 `Gateway` 可以执行以下任何操作：
 
-* Use cloud APIs to create an LB instance.
-* Spawn a new instance of a software LB (in this or another cluster).
-* Add a configuration stanza to an already instantiated LB to handle the new
-  routes.
-* Program the SDN to implement the configuration.
-* Something else we haven’t thought of yet...
+* 被引用云 API 创建 LB 实例。
+* 生成软件 LB 的新实例（在本集群或其他集群中）。
+* 在已实例化的 LB 中添加配置说明，以处理新路由。
+* 对 SDN 进行编程，以实现配置。
+* 还有一些我们还没有想到的...
 
-The API does not specify which one of these actions will be taken.
+应用程序接口未指定将采取其中哪种操作。
 
-### Gateway Status
+### 网关状态
 
-`GatewayStatus` is used to surface the status of a `Gateway` relative to the
-desired state represented in `spec`. `GatewayStatus` consists of the following:
+GatewayStatus"（网关状态）用于显示 "网关 "相对于 "spec"（规格）中所需状态的状态：
 
-- `Addresses`- Lists the IP addresses that have actually been bound to the
-  Gateway.
-- `Listeners`- Provide status for each unique listener defined in `spec`.
-- `Conditions`- Describe the current status conditions of the Gateway.
+* 地址"- 列出实际绑定到 gateway 的 IP 地址。
+* `Listeners`- 为 `spec` 中定义的每个唯一监听器提供状态。
+* `Conditions`- 描述 gateway 的当前状态条件。
 
-Both `Conditions` and `Listeners.conditions` follow the conditions pattern used
-elsewhere in Kubernetes. This is a list that includes a type of condition, the
-status of the condition and the last time this condition changed.
+Conditions "和 "Listeners.conditions "都遵循 Kubernetes 中其他地方被引用的条件模式。 这是一个列表，其中包括条件类型、条件状态和此条件上次发生变化的时间。

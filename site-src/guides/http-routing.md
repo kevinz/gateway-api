@@ -1,62 +1,37 @@
-# HTTP routing
+<!-- TRANSLATED by md-translate -->
+# HTTP 路由
 
-The [HTTPRoute resource](/api-types/httproute) allows you to match on HTTP traffic and
-direct it to Kubernetes backends. This guide shows how the HTTPRoute matches
-traffic on host, header, and path fields and forwards it to different
-Kubernetes Services.
+HTTPRoute 资源](/api-types/httproute) 允许您对 HTTP 流量进行匹配，并将其导向 Kubernetes 后端。 本指南展示了 HTTPRoute 如何对主机、报头和路径字段上的流量进行匹配，并将其转发到不同的 Kubernetes 服务。
 
-The following diagram describes a required traffic flow across three different
-Services:
+下图描述了三个不同服务所需的流量：
 
-- Traffic to `foo.example.com/login` is forwarded to `foo-svc`
-- Traffic to `bar.example.com/*` with a `env: canary` header is forwarded
-to `bar-svc-canary`
-- Traffic to `bar.example.com/*` without the header is forwarded to `bar-svc`
+* 指向 `foo.example.com/login` 的流量会被转发到 `foo-svc` 。
+* 指向 `bar.example.com/*` 并带有 `env: canary` 标头的流量将被转发至
 
-![HTTP Routing](/images/http-routing.png)
+到 `bar-svc-canary`
 
-The dotted lines show the Gateway resources deployed to configure this routing
-behavior. There are two HTTPRoute resources that create routing rules on the
-same `prod-web` Gateway. This illustrates how more than one Route can bind to a
-Gateway which allows Routes to merge on a Gateway as long as they don't
-conflict. For more information on Route merging, refer to the [HTTPRoute
-documentation](/api-types/httproute#merging).
+* 指向 `bar.example.com/*` 而不带标头的流量将被转发到 `bar-svc` 。
 
-In order to receive traffic from a [Gateway][gateway] an `HTTPRoute` resource
-must be configured with `ParentRefs` which reference the parent gateway(s) that it
-should be attached to. The following example shows how the combination
-of `Gateway` and `HTTPRoute` would be configured to serve HTTP traffic:
+HTTP路由](/镜像/http-routing.png)
+
+虚线表示为配置此路由行为而部署的 gateway 资源。 有两个 HTTPRoute 资源在同一个 `prod-web` gateway 上创建路由规则。 这说明了一个 gateway 可以绑定多个路由，只要路由不冲突，就可以在 gateway 上合并。 有关路由合并的更多信息，请参阅 [HTTPRoute 文档](/api-types/httproute#merging)。
+
+要接收来自 [gateway](/reference/spec/#gateway.networking.k8s.io/v1beta1.gateway) 的流量，就必须为`HTTPRoute`资源配置`ParentRefs`，该`ParentRefs`引用了它应连接的父网关。 下面的示例展示了如何配置`Gateway`和`HTTPRoute`的组合，以提供 HTTP 流量：
 
 ```yaml
 {% include 'standard/http-routing/gateway.yaml' %}
 ```
 
-An HTTPRoute can match against a [single set of hostnames][spec].
-These hostnames are matched before any other matching within the HTTPRoute takes
-place. Since `foo.example.com` and `bar.example.com` are separate hosts with
-different routing requirements, each is deployed as its own HTTPRoute -
-`foo-route` and `bar-route`.
+HTTPRoute 可以匹配 [一组主机名](/reference/spec/#gateway.networking.k8s.io/v1beta1.HTTPRouteSpec)。 在 HTTPRoute 进行其他匹配之前，先匹配这些主机名。由于 `foo.example.com` 和 `bar.example.com` 是独立的主机，具有不同的路由要求，因此它们分别部署为自己的 HTTPRoute - `foo-route` 和 `bar-route`。
 
-The following `foo-route` will match any traffic for `foo.example.com` and apply
-its routing rules to forward the traffic to the correct backend. Since there is
-only one match specified, only `foo.example.com/login/*` traffic will be
-forwarded. Traffic to any other paths that do not begin with `/login` will not
-be matched by this Route.
+下面的 `foo-route` 将匹配 `foo.example.com` 的任何流量，并应用其路由规则将流量转发到正确的后端。 由于只指定了一个匹配项，因此只有 `foo.example.com/login/*` 流量会被转发。 此路由不会匹配任何其他不以 `/login` 开头的路径的流量。
 
 ```yaml
 {% include 'standard/http-routing/foo-httproute.yaml' %}
 ```
 
-Similarly, the `bar-route` HTTPRoute matches traffic for `bar.example.com`. All
-traffic for this hostname will be evaluated against the routing rules. The most
-specific match will take precedence which means that any traffic with the `env:
-canary` header will be forwarded to `bar-svc-canary` and if the header is
-missing or not `canary` then it'll be forwarded to `bar-svc`.
+同样，"bar-route "HTTPRoute 会匹配 "bar.example.com "的流量。该主机名的所有流量都将根据路由规则进行评估。 最特殊的匹配将优先，这意味着任何带有 "env: canary "标头的流量都将转发到 "bar-svc-canary"，如果标头缺失或不是 "canary"，则将转发到 "bar-svc"。
 
 ```yaml
 {% include 'standard/http-routing/bar-httproute.yaml' %}
 ```
-
-[gateway]: /reference/spec/#gateway.networking.k8s.io/v1beta1.Gateway
-[spec]: /reference/spec/#gateway.networking.k8s.io/v1beta1.HTTPRouteSpec
-[svc]:https://kubernetes.io/docs/concepts/services-networking/service/
