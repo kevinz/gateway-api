@@ -62,40 +62,40 @@ markdown_extensions:
       permalink: true
   - tables
 nav:
-  - Overview:
-    - Introduction: index.md
-    - Concepts:
-        API Overview: concepts/api-overview.md
+  - 概览:
+    - 介绍: index.md
+    - 概念:
+        API概览: concepts/api-overview.md
         Conformance: concepts/conformance.md
         Roles and Personas: concepts/roles-and-personas.md
-        Security Model: concepts/security-model.md
-        Use Cases: concepts/use-cases.md
-        Versioning: concepts/versioning.md
-    - Service Mesh:
-        Overview: mesh/index.md
+        安全模型: concepts/security-model.md
+        用户案例: concepts/use-cases.md
+        版本: concepts/versioning.md
+    - 服务网格:
+        概览: mesh/index.md
         GAMMA Initiative: mesh/gamma.md
         Service Facets: mesh/service-facets.md
-    - Implementations: implementations.md
-    - FAQ: faq.md
-    - Glossary: concepts/glossary.md
+    - 实现相关: implementations.md
+    - 常见问题: faq.md
+    - 词汇表: concepts/glossary.md
   - Guides:
-    - User Guides:
-      - Getting started: guides/index.md
-      - Simple Gateway: guides/simple-gateway.md
-      - HTTP routing: guides/http-routing.md
+    - 用户指南:
+      - 开始入门: guides/index.md
+      - 简易Gateway: guides/simple-gateway.md
+      - HTTP路由: guides/http-routing.md
       - HTTP redirects and rewrites: guides/http-redirect-rewrite.md
-      - HTTP header modifier: guides/http-header-modifier.md
-      - HTTP traffic splitting: guides/traffic-splitting.md
-      - Cross-Namespace routing: guides/multiple-ns.md
+      - HTTP头修改器: guides/http-header-modifier.md
+      - HTTP流量splitting: guides/traffic-splitting.md
+      - Cross-Namespace路由: guides/multiple-ns.md
       - TLS: guides/tls.md
-      - TCP routing: guides/tcp.md
-      - gRPC Routing: guides/grpc-routing.md
-      - Migrating from Ingress: guides/migrating-from-ingress.md
+      - TCP路由: guides/tcp.md
+      - gRPC路由: guides/grpc-routing.md
+      - 从Ingress迁移: guides/migrating-from-ingress.md
       - Backend Protocol Selection: guides/backend-protocol.md
-    - API Design: guides/api-design.md
-    - CRD Management: guides/crd-management.md
+    - API设计: guides/api-design.md
+    - CRD管理: guides/crd-management.md
     - Implementer's Guide: guides/implementers.md
-  - Reference:
+  - 参考引用:
     - API Types:
       - Gateway: api-types/gateway.md
       - GatewayClass: api-types/gatewayclass.md
@@ -107,7 +107,7 @@ nav:
     - API specification: reference/spec.md
     - Policy Attachment: reference/policy-attachment.md
   - Enhancements:
-    - Overview: geps/overview.md
+    - 概览: geps/overview.md
     - Provisional:
       - geps/gep-91/index.md
       - geps/gep-1619/index.md
